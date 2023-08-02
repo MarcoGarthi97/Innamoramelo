@@ -7,14 +7,19 @@ namespace Innamoramelo.Models
     {
         [BsonIgnoreIfDefault]
         public ObjectId Id { get; set; }
-        public string? Username { get; set; }
+        public string? Phone { get; set; }
         public string? Password { get; set; }
         public string? Email { get; set; }
 
         public User() { }
-        public User(string? username, string? password, string? email)
+        public User(string? phone, string? password)
         {
-            Username = username;
+            Phone = phone;
+            Password = password;
+        }
+        public User(string? phone, string? password, string? email)
+        {
+            Phone = phone;
             Password = password;
             Email = email;
         }
@@ -104,13 +109,13 @@ namespace Innamoramelo.Models
 
     public class Matches
     {
-        public string? Username { get; set; }
-        public bool Like { get; set; }
+        public ObjectId UsernameId { get; set; }
+        public bool? Like { get; set; }
 
         public Matches() { }
-        public Matches(string? username, bool like)
+        public Matches(ObjectId usernameId, bool? like)
         {
-            Username = username;
+            UsernameId = usernameId;
             Like = like;
         }
     }
