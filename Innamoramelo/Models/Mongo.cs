@@ -15,7 +15,7 @@ namespace Innamoramelo.Models
             return mongoClient.GetDatabase("Innamoramelo");
         }
 
-        internal async Task<User?> GetUser(User user)
+        internal async Task<User?> GetUser(User user, bool onlyUser = false)
         {
             try
             {
@@ -23,9 +23,12 @@ namespace Innamoramelo.Models
                 IMongoCollection<User> users = innamoramelo.GetCollection<User>("Users");
 
                 var filter = Builders<User>.Filter.Eq(x => x.Phone, user.Phone);
-                filter &= Builders<User>.Filter.Eq(x => x.Password, user.Password);
+
+                if(!onlyUser)
+                    filter &= Builders<User>.Filter.Eq(x => x.Password, user.Password);
 
                 var find = users.Find(filter).FirstOrDefault();
+                find.Password = null;
 
                 return find;
             }
@@ -75,6 +78,12 @@ namespace Innamoramelo.Models
 
                 if (!string.IsNullOrEmpty(user.Email))
                     updateDefinition.Add(Builders<User>.Update.Set("Email", user.Email));
+
+                if (user.SecretCode != null)
+                    updateDefinition.Add(Builders<User>.Update.Set("SecretCode", user.SecretCode));
+
+                if (user.IsActive != null)
+                    updateDefinition.Add(Builders<User>.Update.Set("IsActive", user.IsActive));
 
                 var update = Builders<User>.Update.Combine(updateDefinition);
 
@@ -265,7 +274,7 @@ namespace Innamoramelo.Models
             }
         }
 
-        internal async Task<Match?> GetAllMatch(ObjectId id, int type = 0)
+        internal async Task<List<Match?>> GetAllMatch(ObjectId id, int type = 0)
         {
             try
             {
@@ -279,7 +288,7 @@ namespace Innamoramelo.Models
                 else if(type == 1)
                     filter &= Builders<Match>.Filter.Eq(x => x.IsMatch, false);
 
-                var find = matches.Find(filter).FirstOrDefault();
+                var find = matches.Aggregate().Match(filter).ToList();
 
                 return find;
             }
@@ -288,6 +297,25 @@ namespace Innamoramelo.Models
                 Console.WriteLine(ex.Message);
 
                 return null;
+            }
+        }
+
+        internal async Task<bool> InsertMatch(Match match)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = GetDatabase();
+                IMongoCollection<Match> matches = innamoramelo.GetCollection<Match>("Match");
+
+                matches.InsertOne(match);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return false;
             }
         }
 
@@ -332,6 +360,244 @@ namespace Innamoramelo.Models
                 var filter = Builders<Match>.Filter.Eq(x => x.Id, id);
 
                 var delete = matches.DeleteOne(filter);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return false;
+            }
+        }
+
+        internal async Task<ChatInfos?> GetChatInfo(ObjectId id)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = GetDatabase();
+                IMongoCollection<ChatInfos> chatInfos = innamoramelo.GetCollection<ChatInfos>("ChatInfos");
+
+                var filter = Builders<ChatInfos>.Filter.Eq(x => x.Id, id);
+
+                var find = chatInfos.Find(filter).FirstOrDefault();
+
+                return find;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return null;
+            }
+        }
+
+        internal async Task<List<ChatInfos>?> GetAllChatInfo(ObjectId UserId)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = GetDatabase();
+                IMongoCollection<ChatInfos> chatInfos = innamoramelo.GetCollection<ChatInfos>("ChatInfos");
+
+                var filter = Builders<ChatInfos>.Filter.ElemMatch(x => x.ChatInfosUsers, u => u.UserId == UserId);
+
+                var find = chatInfos.Aggregate().Match(filter).ToList();
+
+                return find;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return null;
+            }
+        }
+
+        internal async Task<bool> InsertChatInfos(ChatInfos chat)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = GetDatabase();
+                IMongoCollection<ChatInfos> chatInfos = innamoramelo.GetCollection<ChatInfos>("ChatInfos");
+
+                chatInfos.InsertOne(chat);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return false;
+            }
+        }
+
+        internal async Task<bool> UpdateChatInfos(ChatInfos chatInfos)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = GetDatabase();
+                IMongoCollection<ChatInfos> _chatInfos = innamoramelo.GetCollection<ChatInfos>("Matches");
+
+                var filter = Builders<ChatInfos>.Filter.Eq(x => x.Id, chatInfos.Id);
+
+                var updateDefinition = new List<UpdateDefinition<ChatInfos>>();
+
+                if (chatInfos.IsActive)
+                    updateDefinition.Add(Builders<ChatInfos>.Update.Set("IsActive", chatInfos.IsActive));
+
+                if (chatInfos.ChatInfosUsers != null)
+                    updateDefinition.Add(Builders<ChatInfos>.Update.Set("ChatInfosUsers", chatInfos.ChatInfosUsers));
+
+                var update = Builders<ChatInfos>.Update.Combine(updateDefinition);
+
+                var updateResult = _chatInfos.UpdateOne(filter, update);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return false;
+            }
+        }
+
+        internal async Task<bool> DeleteChatInfos(ObjectId id)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = GetDatabase();
+                IMongoCollection<ChatInfos> chatInfos = innamoramelo.GetCollection<ChatInfos>("ChatInfos");
+
+                var filter = Builders<ChatInfos>.Filter.Eq(x => x.Id, id);
+
+                var delete = chatInfos.DeleteOne(filter);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return false;
+            }
+        }
+
+        internal async Task<Chat?> GetChat(ObjectId id)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = GetDatabase();
+                IMongoCollection<Chat> chats = innamoramelo.GetCollection<Chat>("Chats");
+
+                var filter = Builders<Chat>.Filter.Eq(x => x.Id, id);
+
+                var find = chats.Find(filter).FirstOrDefault();
+
+                return find;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return null;
+            }
+        }
+
+        internal async Task<List<Chat?>> GetAllChat(Chat chat)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = GetDatabase();
+                IMongoCollection<Chat> chats = innamoramelo.GetCollection<Chat>("Chats");
+
+                var filter = Builders<Chat>.Filter.Eq(x => x.SenderId, chat.SenderId);
+                filter &= Builders<Chat>.Filter.Eq(x => x.ReceiverId, chat.ReceiverId);
+
+                var find = chats.Aggregate().Match(filter).ToList();
+
+                filter = Builders<Chat>.Filter.Eq(x => x.SenderId, chat.ReceiverId);
+                filter &= Builders<Chat>.Filter.Eq(x => x.ReceiverId, chat.SenderId);
+
+                find.AddRange(chats.Aggregate().Match(filter).ToList());
+
+                return find;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return null;
+            }
+        }
+
+        internal async Task<bool> InsertChat(Chat chat)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = GetDatabase();
+                IMongoCollection<Chat> chats = innamoramelo.GetCollection<Chat>("Chats");
+
+                chats.InsertOne(chat);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return false;
+            }
+        }
+
+        internal async Task<bool> UpdateChat(Chat chat)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = GetDatabase();
+                IMongoCollection<Chat> chats = innamoramelo.GetCollection<Chat>("Chats");
+
+                var filter = Builders<Chat>.Filter.Eq(x => x.Id, chat.Id);
+
+                var updateDefinition = new List<UpdateDefinition<Chat>>();
+
+                if (chat.SenderId != null)
+                    updateDefinition.Add(Builders<Chat>.Update.Set("SenderId", chat.SenderId));
+
+                if (chat.ReceiverId != null)
+                    updateDefinition.Add(Builders<Chat>.Update.Set("ReceiverId", chat.ReceiverId));
+
+                if (!string.IsNullOrEmpty(chat.Content))
+                    updateDefinition.Add(Builders<Chat>.Update.Set("Content", chat.Content));
+
+                if (chat.Timestamp.HasValue)
+                    updateDefinition.Add(Builders<Chat>.Update.Set("Timestamp", chat.Timestamp));
+
+                var update = Builders<Chat>.Update.Combine(updateDefinition);
+
+                var updateResult = chats.UpdateOne(filter, update);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return false;
+            }
+        }
+
+        internal async Task<bool> DeleteChat(ObjectId id)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = GetDatabase();
+                IMongoCollection<Chat> chats = innamoramelo.GetCollection<Chat>("Chats");
+
+                var filter = Builders<Chat>.Filter.Eq(x => x.Id, id);
+
+                var delete = chats.DeleteOne(filter);
 
                 return true;
             }

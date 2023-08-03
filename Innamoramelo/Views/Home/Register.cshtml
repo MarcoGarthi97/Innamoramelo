@@ -1,0 +1,17 @@
+﻿<button id="sendMail">Send</button>
+
+
+<script>
+    $('#sendMail').on('click', function(){
+        $.ajax({
+            url: '@Url.Action("SendMail", "Login")',
+            type: "POST",
+            success: function (result) {
+                console.log(result)
+            },
+            error: function (error) {
+                console.log(error)
+            }
+        })
+    })
+</script>

@@ -10,8 +10,14 @@ namespace Innamoramelo.Models
         public string? Phone { get; set; }
         public string? Password { get; set; }
         public string? Email { get; set; }
+        public SecretCode? SecretCode { get; set; }
+        public bool? IsActive { get; set; }
 
         public User() { }
+        public User(bool? isActive)
+        {
+            IsActive = isActive;
+        }
         public User(string? phone, string? password)
         {
             Phone = phone;
@@ -25,12 +31,24 @@ namespace Innamoramelo.Models
         }
     }
 
+    public class SecretCode
+    {
+        public string? Code { get; set; }
+        public DateTime? Created { get; set; }
+
+        public SecretCode() { }
+        public SecretCode(string? code, DateTime? created)
+        {
+            Code = code;
+            Created = created;
+        }
+    }
+
     public class Profile
     {
         [BsonIgnoreIfDefault]
         public ObjectId Id { get; set; }
         public ObjectId UserId { get; set; }
-        public bool IsActive { get; set; }
         public string? Name { get; set; }
         public string? Gender { get; set; }
         public string? SexualOrientation { get; set; }
@@ -45,10 +63,9 @@ namespace Innamoramelo.Models
         public int? RangeKm { get; set; }
 
         public Profile() { }
-        public Profile(ObjectId userId, bool isActive, string? name, string? gender, string? sexualOrientation, string? lookingFor, string? school, string? work, string? bio, List<string>? passions, DateTime? birthday, Location? location, List<Photo>? photos, int? rangeKm)
+        public Profile(ObjectId userId, string? name, string? gender, string? sexualOrientation, string? lookingFor, string? school, string? work, string? bio, List<string>? passions, DateTime? birthday, Location? location, List<Photo>? photos, int? rangeKm)
         {
             UserId = userId;
-            IsActive = isActive;
             Name = name;
             Gender = gender;
             SexualOrientation = sexualOrientation;
@@ -137,14 +154,14 @@ namespace Innamoramelo.Models
 
     public class ChatInfosUser
     {
-        public string? Username { get; set; }
+        public ObjectId UserId { get; set; }
         public string? Name { get; set; }
         public byte[]? Bytes { get; set; }
 
         public ChatInfosUser() { }
-        public ChatInfosUser(string? username, string? name, byte[]? bytes)
+        public ChatInfosUser(ObjectId userId, string? name, byte[]? bytes)
         {
-            Username = username;
+            UserId = userId;
             Name = name;
             Bytes = bytes;
         }
@@ -154,13 +171,19 @@ namespace Innamoramelo.Models
     {
         [BsonIgnoreIfDefault]
         public ObjectId Id { get; set; }
-        public string? SenderId { get; set; }
-        public string? ReceiverId { get; set; }
+        public ObjectId? SenderId { get; set; }
+        public ObjectId? ReceiverId { get; set; }
         public string? Content { get; set; }
-        public DateTime Timestamp { get; set; }
+        public DateTime? Timestamp { get; set; }
 
         public Chat() { }
-        public Chat(string? senderId, string? receiverId, string? content, DateTime timestamp)
+        public Chat(ObjectId? senderId, ObjectId? receiverId)
+        {
+            SenderId = senderId;
+            ReceiverId = receiverId;
+        }
+
+        public Chat(ObjectId? senderId, ObjectId? receiverId, string? content, DateTime? timestamp)
         {
             SenderId = senderId;
             ReceiverId = receiverId;
