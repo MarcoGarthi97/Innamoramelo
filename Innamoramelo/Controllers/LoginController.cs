@@ -1,13 +1,17 @@
 ﻿using Innamoramelo.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Org.BouncyCastle.Utilities;
 
 namespace Innamoramelo.Controllers
 {
     public class LoginController : Controller
     {
-        private readonly PrivateController _privateController = new();
+        private PrivateController _privateController;
+        private HttpContext LoadContext()
+        {
+            return HttpContext;
+        }
+
         public JsonResult Login(string json)
         {
             try
@@ -57,10 +61,13 @@ namespace Innamoramelo.Controllers
                     user.SecretCode = CreateSecretCode();
                     user.IsActive = false;
 
+                    _privateController = new(LoadContext());
+
                     var insert = mongo.InsertUser(user).Result;
                     if (insert)
                     {
-                        HttpContext.Session.SetString("InfoUser", json);
+                        json = JsonConvert.SerializeObject(user);
+                        _privateController.PutSessionUser(json);
 
                         SendCode();
                         return Json(true);
@@ -164,7 +171,7 @@ namespace Innamoramelo.Controllers
             Random rnd = new Random();
             int num = rnd.Next(10000, 99999);
 
-            var secretCode = new SecretCode(num.ToString(), new DateTime());
+            var secretCode = new SecretCode(num.ToString(), DateTime.Now);
 
             return secretCode;
         }        

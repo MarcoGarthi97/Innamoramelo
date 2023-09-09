@@ -22,13 +22,15 @@ namespace Innamoramelo.Models
                 IMongoDatabase innamoramelo = GetDatabase();
                 IMongoCollection<User> users = innamoramelo.GetCollection<User>("Users");
 
-                var filter = Builders<User>.Filter.Eq(x => x.Phone, user.Phone);
+                var filter = Builders<User>.Filter.Eq(x => x.Email, user.Email);
 
                 if(!onlyUser)
                     filter &= Builders<User>.Filter.Eq(x => x.Password, user.Password);
 
                 var find = users.Find(filter).FirstOrDefault();
-                find.Password = null;
+                
+                if(find != null)
+                    find.Password = null;
 
                 return find;
             }
@@ -70,8 +72,8 @@ namespace Innamoramelo.Models
 
                 var updateDefinition = new List<UpdateDefinition<User>>();
 
-                if (!string.IsNullOrEmpty(user.Phone))
-                    updateDefinition.Add(Builders<User>.Update.Set("Username", user.Phone));
+                if (!string.IsNullOrEmpty(user.Name))
+                    updateDefinition.Add(Builders<User>.Update.Set("Name", user.Name));
 
                 if (!string.IsNullOrEmpty(user.Password))
                     updateDefinition.Add(Builders<User>.Update.Set("Password", user.Password));
@@ -182,9 +184,6 @@ namespace Innamoramelo.Models
 
                 var updateDefinition = new List<UpdateDefinition<Profile>>();
 
-                if (!string.IsNullOrEmpty(profile.Name))
-                    updateDefinition.Add(Builders<Profile>.Update.Set("Name", profile.Name));
-
                 if (!string.IsNullOrEmpty(profile.Gender))
                     updateDefinition.Add(Builders<Profile>.Update.Set("Gender", profile.Gender));
 
@@ -205,9 +204,6 @@ namespace Innamoramelo.Models
 
                 if (profile.Passions != null)
                     updateDefinition.Add(Builders<Profile>.Update.Set("Passions", profile.Passions));
-
-                if (profile.Birthday.HasValue)
-                    updateDefinition.Add(Builders<Profile>.Update.Set("Birthday", profile.Birthday));
 
                 if (profile.Location != null)
                     updateDefinition.Add(Builders<Profile>.Update.Set("Location", profile.Location));

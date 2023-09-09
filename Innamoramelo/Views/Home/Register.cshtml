@@ -1,17 +1,78 @@
-﻿<button id="sendMail">Send</button>
+﻿<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card bg-dark">
+            <div class="card-header">
+                <h2>Register</h2>
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="row">
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Name</label>
+                                <input type="text" name="name" class="form-control" id="name" value="Marco">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="birthday" class="form-label">Birthday</label>
+                                <input type="date" name="birthday" class="form-control" id="birthday" value='2023-09-08'>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="mail" class="form-label">E-mail</label>
+                                <input type="text" name="mail" class="form-control" id="mail" value="marcogarthi@gmail.com">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" name="password" class="form-control" id="password" value="123">
+                                <a href='@Url.Action("Login", "Home")'>Have an account?</a>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" id="homepage" class="btn btn-primary">←</button>
+                    <div class="float-end">
+                        <button type="button" id="register" class="btn btn-primary">Continue</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="pinModal" tabindex="-1" aria-labelledby="pinModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pinModalLabel">Inserisci PIN</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Enter the code inside the email we sent you.</p>
+                <form id="pinForm" class="d-flex">
+                    <input type="text" class="form-control pin-input" maxlength="1" required>
+                    <input type="text" class="form-control pin-input" maxlength="1" required>
+                    <input type="text" class="form-control pin-input" maxlength="1" required>
+                    <input type="text" class="form-control pin-input" maxlength="1" required>
+                    <input type="text" class="form-control pin-input" maxlength="1" required>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="verify">Verify</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 <script>
-    $('#sendMail').on('click', function(){
-        $.ajax({
-            url: '@Url.Action("SendMail", "Login")',
-            type: "POST",
-            success: function (result) {
-                console.log(result)
-            },
-            error: function (error) {
-                console.log(error)
-            }
-        })
-    })
+    var urlRegister = '@Url.Action("Register", "Login")'
+    var urlVerify = '@Url.Action("CheckSecretCode", "Login")'
+    var urlSendMail = '@Url.Action("SendMail", "Login")'
 </script>
+<script src="~/js/register.js"></script>

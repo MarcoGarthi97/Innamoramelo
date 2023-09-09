@@ -1,15 +1,20 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Innamoramelo.Models
 {
     public class User
     {
         [BsonIgnoreIfDefault]
+        [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId Id { get; set; }
+        public string? Name { get; set; }
         public string? Phone { get; set; }
         public string? Password { get; set; }
         public string? Email { get; set; }
+        public DateTime? Birthday { get; set; }
         public SecretCode? SecretCode { get; set; }
         public bool? IsActive { get; set; }
 
@@ -46,10 +51,10 @@ namespace Innamoramelo.Models
 
     public class Profile
     {
-        [BsonIgnoreIfDefault]
+        [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId Id { get; set; }
+        [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId UserId { get; set; }
-        public string? Name { get; set; }
         public string? Gender { get; set; }
         public string? SexualOrientation { get; set; }
         public string? LookingFor { get; set; }
@@ -57,16 +62,14 @@ namespace Innamoramelo.Models
         public string? Work { get; set; }
         public string? Bio { get; set; }
         public List<string>? Passions { get; set; }
-        public DateTime? Birthday { get; set; }
         public Location? Location { get; set; }
         public List<Photo>? Photos { get; set; }
         public int? RangeKm { get; set; }
 
         public Profile() { }
-        public Profile(ObjectId userId, string? name, string? gender, string? sexualOrientation, string? lookingFor, string? school, string? work, string? bio, List<string>? passions, DateTime? birthday, Location? location, List<Photo>? photos, int? rangeKm)
+        public Profile(ObjectId userId, string? gender, string? sexualOrientation, string? lookingFor, string? school, string? work, string? bio, List<string>? passions, Location? location, List<Photo>? photos, int? rangeKm)
         {
             UserId = userId;
-            Name = name;
             Gender = gender;
             SexualOrientation = sexualOrientation;
             LookingFor = lookingFor;
@@ -74,7 +77,6 @@ namespace Innamoramelo.Models
             Work = work;
             Bio = bio;
             Passions = passions;
-            Birthday = birthday;
             Location = location;
             Photos = photos;
             RangeKm = rangeKm;
@@ -111,7 +113,7 @@ namespace Innamoramelo.Models
 
     public class Match
     {
-        [BsonIgnoreIfDefault]
+        [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId Id { get; set; }
         public List<Matches>? Matches { get; set; }
         public bool? IsMatch { get; set; }
@@ -126,6 +128,7 @@ namespace Innamoramelo.Models
 
     public class Matches
     {
+        [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId UsernameId { get; set; }
         public bool? Like { get; set; }
 
@@ -139,7 +142,7 @@ namespace Innamoramelo.Models
 
     public class ChatInfos
     {
-        [BsonIgnoreIfDefault]
+        [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId Id { get; set; }
         public bool IsActive { get; set; }
         public List<ChatInfosUser>? ChatInfosUsers { get; set; }
@@ -154,6 +157,7 @@ namespace Innamoramelo.Models
 
     public class ChatInfosUser
     {
+        [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId UserId { get; set; }
         public string? Name { get; set; }
         public byte[]? Bytes { get; set; }
@@ -169,9 +173,11 @@ namespace Innamoramelo.Models
 
     public class Chat
     {
-        [BsonIgnoreIfDefault]
+        [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId Id { get; set; }
+        [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId? SenderId { get; set; }
+        [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId? ReceiverId { get; set; }
         public string? Content { get; set; }
         public DateTime? Timestamp { get; set; }
@@ -190,5 +196,23 @@ namespace Innamoramelo.Models
             Content = content;
             Timestamp = timestamp;
         }
+    }
+}
+
+public class ObjectIdConverter : JsonConverter<ObjectId>
+{
+    public override ObjectId ReadJson(JsonReader reader, Type objectType, ObjectId existingValue, bool hasExistingValue, JsonSerializer serializer)
+    {
+        var token = JToken.Load(reader);
+        if (token.Type == JTokenType.String)
+        {
+            return ObjectId.Parse(token.Value<string>());
+        }
+        return ObjectId.Empty;
+    }
+
+    public override void WriteJson(JsonWriter writer, ObjectId value, JsonSerializer serializer)
+    {
+        writer.WriteValue(value.ToString());
     }
 }

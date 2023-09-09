@@ -6,9 +6,15 @@ namespace Innamoramelo.Controllers
 {
     public class PrivateController : Controller
     {
+        private HttpContext httpContext;
+        public PrivateController(HttpContext _httpContext) 
+        { 
+            httpContext = _httpContext;
+        }
+
         internal User GetSessionUser()
         {
-            var json = HttpContext.Session.GetString("InfoUser");
+            string json = httpContext.Session.GetString("InfoUser");
             if (json != null)
             {
                 var user = JsonConvert.DeserializeObject<User>(json);
@@ -19,6 +25,11 @@ namespace Innamoramelo.Controllers
             }
 
             return new User();
+        }
+
+        internal void PutSessionUser(string json)
+        {
+            httpContext.Session.SetString("InfoUser", json);
         }
     }
 }
