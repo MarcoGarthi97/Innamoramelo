@@ -19,17 +19,29 @@ namespace Innamoramelo.Controllers
             {
                 var user = JsonConvert.DeserializeObject<User>(json);
                 if (user != null)
-                {
                     return user;
-                }
             }
 
             return new User();
         }
 
+        internal int? GetLogon()
+        {
+            int? logon = httpContext.Session.GetInt32("Logon");
+            if (logon != null)
+                return logon;
+
+            return null;
+        }
+
         internal void PutSessionUser(string json)
         {
             httpContext.Session.SetString("InfoUser", json);
+        }
+
+        internal void PutLogon(int val)
+        {
+            httpContext.Session.SetInt32("Logon", val);
         }
     }
 }

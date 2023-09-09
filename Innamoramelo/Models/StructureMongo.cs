@@ -17,6 +17,7 @@ namespace Innamoramelo.Models
         public DateTime? Birthday { get; set; }
         public SecretCode? SecretCode { get; set; }
         public bool? IsActive { get; set; }
+        public bool? CreateProfile { get; set; }
 
         public User() { }
         public User(bool? isActive)

@@ -87,6 +87,9 @@ namespace Innamoramelo.Models
                 if (user.IsActive != null)
                     updateDefinition.Add(Builders<User>.Update.Set("IsActive", user.IsActive));
 
+                if (user.CreateProfile != null)
+                    updateDefinition.Add(Builders<User>.Update.Set("CreateProfile", user.CreateProfile));
+
                 var update = Builders<User>.Update.Combine(updateDefinition);
 
                 var updateResult = users.UpdateOne(filter, update);

@@ -17,27 +17,9 @@ namespace Innamoramelo.Controllers
             try
             {
                 var user = JsonConvert.DeserializeObject<User>(json);
-                if(user != null)
-                {
-                    Mongo mongo = new Mongo();
-                    var findUser = mongo.GetUser(user, true).Result;
-
-                    if (findUser != null && findUser.IsActive == true)
-                    {
-                        string userJson = JsonConvert.SerializeObject(findUser);
-                        HttpContext.Session.SetString("InfoUser", userJson);
-                        HttpContext.Session.SetInt32("Logon", 1);
-
-                        var findProfile = mongo.GetProfile(user.Id, 1);
-                        if (findProfile != null)
-                        {
-                            string userProfile = JsonConvert.SerializeObject(findProfile);
-                            HttpContext.Session.SetString("ProfileUser", userProfile);
-                        }
-
-                        return Json(true);
-                    }
-                }                
+                bool result = GetLogin(user);
+                
+                return Json(result);
             }
             catch (Exception ex)
             {
@@ -60,6 +42,7 @@ namespace Innamoramelo.Controllers
                 {
                     user.SecretCode = CreateSecretCode();
                     user.IsActive = false;
+                    user.CreateProfile = false;
 
                     _privateController = new(LoadContext());
 
@@ -87,23 +70,31 @@ namespace Innamoramelo.Controllers
         {
             try
             {
+                _privateController = new(LoadContext());
+
                 var user = _privateController.GetSessionUser();
                 var secretCode = JsonConvert.DeserializeObject<SecretCode>(json);
 
                 if (user != null && user.SecretCode != null && secretCode != null)
                 {
-                    var difference = new DateTime() - user.SecretCode.Created;
+                    DateTime now = DateTime.Now;
+                    var difference = now - user.SecretCode.Created;
 
                     if (secretCode.Code == user.SecretCode.Code && difference.Value.TotalMinutes < 5)
                     {
-                        var updateUser = new User(true);
-                        updateUser.Id = user.Id;
+                        user.IsActive = true;
 
                         Mongo mongo = new Mongo();
-                        var update = mongo.UpdateUser(updateUser).Result;
+                        var update = mongo.UpdateUser(user).Result;
 
                         if (update)
+                        {
+                            string jsonUser = JsonConvert.SerializeObject(user);
+                            _privateController.PutSessionUser(jsonUser);
+
                             return Json(true);
+                        }
+                            
                     }
                 }
             }
@@ -148,11 +139,34 @@ namespace Innamoramelo.Controllers
 
             return Json(false);
         }
+
         public JsonResult Logout()
         {
             HttpContext.Session.Clear();
 
             return Json(true);
+        }
+
+        private bool GetLogin(User user)
+        {
+            if (user != null)
+            {
+                Mongo mongo = new Mongo();
+                var findUser = mongo.GetUser(user, true).Result;
+
+                if (findUser != null && findUser.IsActive == true)
+                {
+                    string userJson = JsonConvert.SerializeObject(findUser);
+
+                    _privateController = new(LoadContext());
+                    _privateController.PutSessionUser(userJson);
+                    _privateController.PutLogon(1);
+
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void SendCode()

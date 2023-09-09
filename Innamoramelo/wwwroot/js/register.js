@@ -59,7 +59,7 @@ $(document).ready(function () {
         obj.Created = new Date().toJSON()
 
         var json = JSON.stringify(obj)
-
+        
         $.ajax({
             url: urlVerify,
             type: "POST",
