@@ -6,13 +6,7 @@ namespace Innamoramelo.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
-
+        private Authentication authentication = new();
         public IActionResult Index()
         {
             return View();
@@ -41,7 +35,13 @@ namespace Innamoramelo.Controllers
 
         public IActionResult Profile()
         {
-            return View();
+            return View(); //Da cancellare
+            return View(authentication.GetSite("Profile", HttpContext));
+        }
+
+        public IActionResult HomePage()
+        {
+            return View(authentication.GetSite("HomePage", HttpContext));
         }
     }
 }

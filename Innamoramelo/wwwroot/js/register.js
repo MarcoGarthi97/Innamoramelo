@@ -59,13 +59,37 @@ $(document).ready(function () {
         obj.Created = new Date().toJSON()
 
         var json = JSON.stringify(obj)
-        
+
         $.ajax({
             url: urlVerify,
             type: "POST",
             data: { json: json },
             success: function (result) {
                 console.log(result)
+                if (result) {
+                    var mail = $('#mail').val()
+                    var password = $('#password').val()
+
+                    obj = {}
+                    obj.Email = mail
+                    obj.Password = password
+
+                    json = JSON.stringify(obj)
+
+                    $.ajax({
+                        url: urlLogin,
+                        type: "POST",
+                        data: { json: json },
+                        success: function (result) {
+                            if(result){
+                                window.location.href = urlHomePage
+                            }
+                        },
+                        error: function (error) {
+                            console.log(error)
+                        }
+                    })
+                }
             },
             error: function (error) {
                 console.log(error)

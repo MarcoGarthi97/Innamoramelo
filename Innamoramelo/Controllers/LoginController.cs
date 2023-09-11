@@ -12,7 +12,7 @@ namespace Innamoramelo.Controllers
             return HttpContext;
         }
 
-        public JsonResult Login(string json)
+        public JsonResult Logon(string json)
         {
             try
             {

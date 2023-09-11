@@ -10,13 +10,13 @@
                         <div class="col">
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name</label>
-                                <input type="text" name="name" class="form-control" id="name" value="Marco">
+                                <input type="text" name="name" class="form-control" id="name">
                             </div>
                         </div>
                         <div class="col">
                             <div class="mb-3">
                                 <label for="birthday" class="form-label">Birthday</label>
-                                <input type="date" name="birthday" class="form-control" id="birthday" value='2023-09-08'>
+                                <input type="date" name="birthday" class="form-control" id="birthday">
                             </div>
                         </div>
                     </div>
@@ -24,13 +24,13 @@
                         <div class="col">
                             <div class="mb-3">
                                 <label for="mail" class="form-label">E-mail</label>
-                                <input type="text" name="mail" class="form-control" id="mail" value="marcogarthi@gmail.com">
+                                <input type="text" name="mail" class="form-control" id="mail">
                             </div>
                         </div>
                         <div class="col">
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
-                                <input type="password" name="password" class="form-control" id="password" value="123">
+                                <input type="password" name="password" class="form-control" id="password">
                                 <a href='@Url.Action("Login", "Home")'>Have an account?</a>
                             </div>
                         </div>
@@ -49,7 +49,7 @@
     <div class="modal-dialog">
         <div class="modal-content bg-dark">
             <div class="modal-header">
-                <h5 class="modal-title" id="pinModalLabel">Inserisci PIN</h5>
+                <h5 class="modal-title" id="pinModalLabel">Enter your PIN</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -74,5 +74,7 @@
     var urlRegister = '@Url.Action("Register", "Login")'
     var urlVerify = '@Url.Action("CheckSecretCode", "Login")'
     var urlSendMail = '@Url.Action("SendMail", "Login")'
+    var urlLogin = '@Url.Action("Logon", "Login")'
+    var urlHomePage = '@Url.Action("HomePage", "Home")'
 </script>
 <script src="~/js/register.js"></script>
