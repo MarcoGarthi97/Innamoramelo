@@ -1,40 +1,26 @@
 ﻿<div class="row justify-content-center">
     <div class="col-md-8">
-        <div class="card bg-dark">
+        <div class="card bg-dark" id="card">
             <div class="card-header">
                 <h2>Profile</h2>
             </div>
-            <div class="card-body">
-                <form>
-                    <div class="row">
-                        <div class="col">
-                            <div class="mb-3">
-                                <label for="selectSexualOrientation" class="form-label">Sexual orientation</label>
-                                <select class="form-select" id="selectSexualOrientation">
-                                    <option value="" selected></option>
-                                    <option value="Male">Male</option>
-                                    <option value="Famale">Famale</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="mb-3">
-                                <label for="selectLookingFor" class="form-label">What you are looking for?</label>
-                                <select class="form-select" multiple  id="selectLookingFor">
-                                    <option value="" selected></option>
-                                    <option value="Male">Male</option>
-                                    <option value="Famale">Famale</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                        </div>
+            <div class="row">
+                <div class="col">
+                    <div class="mb-3">
+                        <label for="inputEducation" class="form-label">Education</label>
+                        <input type="text" class="form-control" id="inputEducation">
                     </div>
-                    <button type="button" id="homepage" class="btn btn-primary">←</button>
-                    <div class="float-end">
-                        <button type="button" id="register" class="btn btn-primary">Continue</button>
+                </div>
+                <div class="col">
+                    <div class="mb-3">
+                        <label for="inputJob" class="form-label">Job</label>
+                        <input type="text" class="form-control" id="inputJob">
                     </div>
-                </form>
+                </div>
+            </div>
+            <button type="button" id="back" class="btn btn-primary">←</button>
+            <div class="float-end">
+                <button type="button" id="sexualContinue" class="btn btn-primary">Continue</button>
             </div>
         </div>
     </div>
