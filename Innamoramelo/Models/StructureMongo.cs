@@ -198,6 +198,14 @@ namespace Innamoramelo.Models
             Timestamp = timestamp;
         }
     }
+
+    public class Job
+    {
+        [JsonConverter(typeof(ObjectIdConverter))]
+        public ObjectId Id { get; set; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+    }
 }
 
 public class ObjectIdConverter : JsonConverter<ObjectId>

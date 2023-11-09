@@ -1,10 +1,32 @@
-﻿<div class="row justify-content-center">
+﻿<style>
+    .list-group {
+        max-height: 150px;
+        margin-bottom: 10px;
+        overflow: scroll;
+        -webkit-overflow-scrolling: touch;
+        overflow-x: hidden;
+        scrollbar-width: thin !important;
+        scrollbar-color: #3B71CA !important;
+    }
+
+    .list-group::-webkit-scrollbar {
+        width: 12px;
+    }
+
+    .list-group::-webkit-scrollbar-thumb {
+        background-color: #3B71CA;
+        border-radius: 20px;
+    }
+</style>
+
+<div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card bg-dark" id="card">
             <div class="card-header">
                 <h2>Profile</h2>
             </div>
             <div class="row">
+                <div id="card-body"></div>
                 <div class="col">
                     <div class="mb-3">
                         <label for="inputEducation" class="form-label">Education</label>
@@ -12,9 +34,11 @@
                     </div>
                 </div>
                 <div class="col">
-                    <div class="mb-3">
-                        <label for="inputJob" class="form-label">Job</label>
-                        <input type="text" class="form-control" id="inputJob">
+                    <div class="container">
+                        <div style='margin-bottom: 2%; color:"white"'>Job</div>
+                        <input class="form-control" id="inputJobFilter" type="text" placeholder="Search..">
+                        <ul class="list-group" id="listJobs">
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -30,5 +54,6 @@
     var urlRegister = '@Url.Action("Register", "Login")'
     var urlVerify = '@Url.Action("CheckSecretCode", "Login")'
     var urlSendMail = '@Url.Action("SendMail", "Login")'
+    var urlGetJobs = '@Url.Action("GetJobs", "Profile")'
 </script>
 <script src="~/js/profile.js"></script>

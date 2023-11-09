@@ -1,18 +1,19 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
+using System;
 
 namespace Innamoramelo.Models
 {
     public class Mongo
     {
         private string connectionString = File.ReadAllText(@"C:\Users\marco\source\repos\_MyCredentials\Mongo.txt");
-        private IMongoDatabase GetDatabase()
+        private IMongoDatabase GetDatabase(string db = "Innamoramelo")
         {
             var settings = MongoClientSettings.FromConnectionString(connectionString);
             settings.ServerApi = new ServerApi(ServerApiVersion.V1);
             var mongoClient = new MongoClient(settings);
 
-            return mongoClient.GetDatabase("Innamoramelo");
+            return mongoClient.GetDatabase(db);
         }
 
         internal async Task<User?> GetUser(User user, bool onlyUser = false)
@@ -605,6 +606,26 @@ namespace Innamoramelo.Models
                 Console.WriteLine(ex.Message);
 
                 return false;
+            }
+        }
+
+        internal async Task<List<Job>> GetJobs(string _filter)
+        {
+            try
+            {
+                IMongoDatabase db = GetDatabase("HelpDB");
+                IMongoCollection<Job> jobs = db.GetCollection<Job>("Jobs");
+
+                var filter = Builders<Job>.Filter.Regex(x => x.Name, new BsonRegularExpression(_filter.ToLower(), "i"));
+
+                var find = jobs.Aggregate().Match(filter).ToList();
+                return find;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return null;
             }
         }
     }

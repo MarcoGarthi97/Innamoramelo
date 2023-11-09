@@ -44,7 +44,8 @@ $(document).ready(function () {
 
     LoadElements()
     function LoadElements() {
-        //$('#card-body').append(sexualHTML) 
+        // $('#card-body').append(sexualHTML) //funziona
+
     }
 
     $('#sexualContinue').on("click", function () {
@@ -61,14 +62,25 @@ $(document).ready(function () {
 
     })
 
-    GetJobs()
-    function GetJobs(){
-        const options = { method: 'GET', headers: { accept: 'application/json' } };
+    $("#inputJobFilter").on('input', function () {
+        var input = $("#inputJobFilter").val()
 
-        fetch('https://apis.druva.com/insync/legalholds/v4/jobs', options)
-            .then(response => response.json())
-            .then(response => console.log(response))
-            .catch(err => console.error(err));
+        if (input.length > 3)
+            GetJobs(input)
+    })
+
+    function GetJobs(filter) {
+        $.ajax({
+            url: urlGetJobs,
+            type: "POST",
+            data: { filter: filter },
+            success: function (result) {
+                console.log(result)
+            },
+            error: function (error) {
+                console.log(error)
+            }
+        })
     }
 
     $("#selectLookingFor").on("click", "option", function (e) {
