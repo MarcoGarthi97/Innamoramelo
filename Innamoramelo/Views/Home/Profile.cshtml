@@ -17,6 +17,26 @@
         background-color: #3B71CA;
         border-radius: 20px;
     }
+
+    .interest {
+        cursor: pointer;
+        color: white;
+    }
+
+    .card {
+        height: 300px;
+        /* Imposta un'altezza fissa per la card */
+    }
+
+    .card-img-top {
+        width: 100%;
+        height: 240px;
+        object-fit: cover;
+    }
+
+    div {
+        color: white;
+    }
 </style>
 
 <div class="row justify-content-center">
@@ -25,26 +45,39 @@
             <div class="card-header">
                 <h2>Profile</h2>
             </div>
-            <div class="row">
-                <div id="card-body"></div>
-                <div class="col">
-                    <div class="mb-3">
-                        <label for="inputEducation" class="form-label">Education</label>
-                        <input type="text" class="form-control" id="inputEducation">
+            <div class="row" id="card-body">
+                <div class="row">
+                    <div class="col">
+                        <div class="container">
+                            <div style='margin-bottom: 2%; color:"white"'>Municipality</div>
+                            <input class="form-control" id="inputMunicipalityFilter" type="text" placeholder="Search..">
+                            <ul class="list-group" id="listMunicipalities">
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="range" class="form-label" id="labelRange">Range: 5km</label>
+                            <input type="range" class="form-range" id="range" min="5" max="100" value="5">
+                        </div>
                     </div>
                 </div>
-                <div class="col">
-                    <div class="container">
-                        <div style='margin-bottom: 2%; color:"white"'>Job</div>
-                        <input class="form-control" id="inputJobFilter" type="text" placeholder="Search..">
-                        <ul class="list-group" id="listJobs">
-                        </ul>
+                <div class="row">
+                    <div class="input-group">
+                        <label for="inputBio" class="form-label">Biography</label>
+                        <textarea class="form-control" aria-label="With textarea" id="inputBio"></textarea>
                     </div>
                 </div>
             </div>
-            <button type="button" id="back" class="btn btn-primary">←</button>
-            <div class="float-end">
-                <button type="button" id="sexualContinue" class="btn btn-primary">Continue</button>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <button type="button" id="back" class="btn btn-primary">←</button>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <button type="button" id="sexualContinue" class="btn btn-primary">Continue</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -55,5 +88,6 @@
     var urlVerify = '@Url.Action("CheckSecretCode", "Login")'
     var urlSendMail = '@Url.Action("SendMail", "Login")'
     var urlGetJobs = '@Url.Action("GetJobs", "Profile")'
+    var urlGetMunicipalities = '@Url.Action("GetMunicipality", "Profile")'
 </script>
 <script src="~/js/profile.js"></script>

@@ -206,6 +206,25 @@ namespace Innamoramelo.Models
         public string? Name { get; set; }
         public string? Description { get; set; }
     }
+
+    public class Municipality
+    {
+        public ObjectId id { get; set; }
+        public string Name { get; set; }
+        public string Province { get; set; }
+        public string Region { get; set; }
+        public string ProvinceTitle { get; set; }
+
+        public Municipality() { }
+        public Municipality(string name, string province, string region, string provinceTitle)
+        {
+            Name = name;
+            Province = province;
+            Region = region;
+            ProvinceTitle = provinceTitle;
+        }
+
+    }
 }
 
 public class ObjectIdConverter : JsonConverter<ObjectId>

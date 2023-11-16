@@ -8,17 +8,43 @@ namespace Innamoramelo.Controllers
         public JsonResult GetJobs(string filter)
         {
             //mettere il controllo login utente
-            try
+            if (filter != null && filter.Trim() != "")
             {
-                Mongo mongo = new Mongo();
-                var jobs = mongo.GetJobs(filter).Result;
+                try
+                {
+                    Mongo mongo = new Mongo();
+                    var jobs = mongo.GetJobs(filter).Result;
 
-                return Json(jobs);
+                    return Json(jobs);
+                }
+                catch (Exception ex)
+                {
+
+                }
             }
-            catch(Exception ex)
+
+            return Json("");
+        }
+
+        public JsonResult GetMunicipality(string filter)
+        {
+            //mettere il controllo login utente
+            if(filter != null && filter.Trim() != "")
             {
-                return Json("");
+                try
+                {
+                    Mongo mongo = new Mongo();
+                    var municipalities = mongo.GetMunicipality(filter).Result;
+
+                    return Json(municipalities);
+                }
+                catch (Exception ex)
+                {
+
+                }
             }
+
+            return Json("");
         }
     }
 }

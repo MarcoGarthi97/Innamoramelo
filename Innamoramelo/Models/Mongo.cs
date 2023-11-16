@@ -628,5 +628,25 @@ namespace Innamoramelo.Models
                 return null;
             }
         }
+
+        internal async Task<List<Municipality>> GetMunicipality(string _filter)
+        {
+            try
+            {
+                IMongoDatabase db = GetDatabase("HelpDB");
+                IMongoCollection<Municipality> municipalities = db.GetCollection<Municipality>("Comuni");
+
+                var filter = Builders<Municipality>.Filter.Regex(x => x.Name, new BsonRegularExpression(_filter.ToLower(), "i"));
+
+                var find = municipalities.Aggregate().Match(filter).ToList();
+                return find;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return null;
+            }
+        }
     }
 }
