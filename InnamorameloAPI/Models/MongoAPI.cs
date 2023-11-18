@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace InnamorameloAPI.Models
 {
-    public class Mongo
+    public class MongoAPI
     {
         private string connectionString = File.ReadAllText(@"C:\Users\marco\source\repos\_MyCredentials\Mongo.txt");
         internal IMongoDatabase GetDatabase(string db = "Innamoramelo")

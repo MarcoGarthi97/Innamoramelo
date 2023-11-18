@@ -8,12 +8,17 @@ namespace InnamorameloAPI.Controllers
     public class AuthenticationController : ControllerBase
     {
         [HttpPost("GetAuthentication", Name = "GetAuthentication")]
-        public string GetAuthentication(User user)
+        public string GetAuthentication(LoginCredentials user)
         {
-            Authentication authentication = new Authentication();
-            string bearer = authentication.GenerateToken(user.Email, user.Password);
+            if(Validator.ValidateFields(user))
+            {
+                AuthenticationAPI authentication = new AuthenticationAPI();
+                string bearer = authentication.GenerateToken(user.Email, user.Password);
 
-            return bearer;
+                return bearer;
+            }
+
+            return "";
         }
 
         [HttpGet("CheckAuthentication", Name = "CheckAuthentication")]
@@ -29,13 +34,15 @@ namespace InnamorameloAPI.Controllers
                 if (headerValue.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                 {
                     bearerToken = headerValue.Substring("Bearer ".Length).Trim();
+
+                    AuthenticationAPI authentication = new AuthenticationAPI();
+                    bool check = authentication.ValidateToken(bearerToken);
+
+                    return check;
                 }
             }
-
-            Authentication authentication = new Authentication();
-            bool check = authentication.ValidateToken(bearerToken);
-
-            return check;
+            
+            return false;
         }
     }
 }

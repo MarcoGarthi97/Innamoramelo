@@ -1,12 +1,12 @@
 ﻿namespace InnamorameloAPI.Models
 {
-    public class Location
+    public class LocationAPI
     {
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
-        public Location() { }
-        public Location(double latitude, double longitude)
+        public LocationAPI() { }
+        public LocationAPI(double latitude, double longitude)
         {
             Latitude = latitude;
             Longitude = longitude;

@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace InnamorameloAPI.Models
 {
-    public class Profile
+    public class ProfileAPI
     {
         [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId Id { get; set; }
@@ -17,12 +17,12 @@ namespace InnamorameloAPI.Models
         public string? Work { get; set; }
         public string? Bio { get; set; }
         public List<string>? Passions { get; set; }
-        public Location? Location { get; set; }
-        public List<Photo>? Photos { get; set; }
+        public LocationAPI? Location { get; set; }
+        public List<PhotoAPI>? Photos { get; set; }
         public int? RangeKm { get; set; }
 
-        public Profile() { }
-        public Profile(ObjectId userId, string? gender, string? sexualOrientation, string? lookingFor, string? school, string? work, string? bio, List<string>? passions, Location? location, List<Photo>? photos, int? rangeKm)
+        public ProfileAPI() { }
+        public ProfileAPI(ObjectId userId, string? gender, string? sexualOrientation, string? lookingFor, string? school, string? work, string? bio, List<string>? passions, LocationAPI? location, List<PhotoAPI>? photos, int? rangeKm)
         {
             UserId = userId;
             Gender = gender;
@@ -37,23 +37,23 @@ namespace InnamorameloAPI.Models
             RangeKm = rangeKm;
         }
 
-        static private Mongo mongo = new Mongo();
+        static private MongoAPI mongo = new MongoAPI();
 
-        internal Profile? GetProfile(ObjectId id, int type = 0)
+        internal ProfileAPI? GetProfile(ObjectId id, int type = 0)
         {
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<Profile> profiles = innamoramelo.GetCollection<Profile>("Profiles");
+                IMongoCollection<ProfileAPI> profiles = innamoramelo.GetCollection<ProfileAPI>("Profiles");
 
-                FilterDefinition<Profile> filter;
+                FilterDefinition<ProfileAPI> filter;
 
                 if (type == 0)
-                    filter = Builders<Profile>.Filter.Eq(x => x.Id, id);
+                    filter = Builders<ProfileAPI>.Filter.Eq(x => x.Id, id);
                 else if (type == 1)
-                    filter = Builders<Profile>.Filter.Eq(x => x.UserId, id);
+                    filter = Builders<ProfileAPI>.Filter.Eq(x => x.UserId, id);
                 else
-                    filter = Builders<Profile>.Filter.Empty;
+                    filter = Builders<ProfileAPI>.Filter.Empty;
 
                 var find = profiles.Find(filter).FirstOrDefault();
 
@@ -67,12 +67,12 @@ namespace InnamorameloAPI.Models
             }
         }
 
-        internal bool InsertProfile(Profile profile)
+        internal bool InsertProfile(ProfileAPI profile)
         {
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<Profile> profiles = innamoramelo.GetCollection<Profile>("Profiles");
+                IMongoCollection<ProfileAPI> profiles = innamoramelo.GetCollection<ProfileAPI>("Profiles");
 
                 profiles.InsertOne(profile);
 
@@ -86,48 +86,48 @@ namespace InnamorameloAPI.Models
             }
         }
 
-        internal bool UpdateProfile(Profile profile)
+        internal bool UpdateProfile(ProfileAPI profile)
         {
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<Profile> profiles = innamoramelo.GetCollection<Profile>("Profiles");
+                IMongoCollection<ProfileAPI> profiles = innamoramelo.GetCollection<ProfileAPI>("Profiles");
 
-                var filter = Builders<Profile>.Filter.Eq(x => x.Id, profile.Id);
+                var filter = Builders<ProfileAPI>.Filter.Eq(x => x.Id, profile.Id);
 
-                var updateDefinition = new List<UpdateDefinition<Profile>>();
+                var updateDefinition = new List<UpdateDefinition<ProfileAPI>>();
 
                 if (!string.IsNullOrEmpty(profile.Gender))
-                    updateDefinition.Add(Builders<Profile>.Update.Set("Gender", profile.Gender));
+                    updateDefinition.Add(Builders<ProfileAPI>.Update.Set("Gender", profile.Gender));
 
                 if (!string.IsNullOrEmpty(profile.SexualOrientation))
-                    updateDefinition.Add(Builders<Profile>.Update.Set("SexualOrientation", profile.SexualOrientation));
+                    updateDefinition.Add(Builders<ProfileAPI>.Update.Set("SexualOrientation", profile.SexualOrientation));
 
                 if (!string.IsNullOrEmpty(profile.LookingFor))
-                    updateDefinition.Add(Builders<Profile>.Update.Set("LookingFor", profile.LookingFor));
+                    updateDefinition.Add(Builders<ProfileAPI>.Update.Set("LookingFor", profile.LookingFor));
 
                 if (!string.IsNullOrEmpty(profile.School))
-                    updateDefinition.Add(Builders<Profile>.Update.Set("School", profile.School));
+                    updateDefinition.Add(Builders<ProfileAPI>.Update.Set("School", profile.School));
 
                 if (!string.IsNullOrEmpty(profile.Work))
-                    updateDefinition.Add(Builders<Profile>.Update.Set("Work", profile.Work));
+                    updateDefinition.Add(Builders<ProfileAPI>.Update.Set("Work", profile.Work));
 
                 if (!string.IsNullOrEmpty(profile.Bio))
-                    updateDefinition.Add(Builders<Profile>.Update.Set("Bio", profile.Bio));
+                    updateDefinition.Add(Builders<ProfileAPI>.Update.Set("Bio", profile.Bio));
 
                 if (profile.Passions != null)
-                    updateDefinition.Add(Builders<Profile>.Update.Set("Passions", profile.Passions));
+                    updateDefinition.Add(Builders<ProfileAPI>.Update.Set("Passions", profile.Passions));
 
                 if (profile.Location != null)
-                    updateDefinition.Add(Builders<Profile>.Update.Set("Location", profile.Location));
+                    updateDefinition.Add(Builders<ProfileAPI>.Update.Set("Location", profile.Location));
 
                 if (profile.Photos != null)
-                    updateDefinition.Add(Builders<Profile>.Update.Set("Photos", profile.Photos));
+                    updateDefinition.Add(Builders<ProfileAPI>.Update.Set("Photos", profile.Photos));
 
                 if (profile.RangeKm.HasValue)
-                    updateDefinition.Add(Builders<Profile>.Update.Set("RangeKm", profile.RangeKm));
+                    updateDefinition.Add(Builders<ProfileAPI>.Update.Set("RangeKm", profile.RangeKm));
 
-                var update = Builders<Profile>.Update.Combine(updateDefinition);
+                var update = Builders<ProfileAPI>.Update.Combine(updateDefinition);
 
                 var updateResult = profiles.UpdateOne(filter, update);
 
@@ -146,9 +146,9 @@ namespace InnamorameloAPI.Models
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<Profile> profiles = innamoramelo.GetCollection<Profile>("Profiles");
+                IMongoCollection<ProfileAPI> profiles = innamoramelo.GetCollection<ProfileAPI>("Profiles");
 
-                var filter = Builders<Profile>.Filter.Eq(x => x.Id, id);
+                var filter = Builders<ProfileAPI>.Filter.Eq(x => x.Id, id);
 
                 var delete = profiles.DeleteOne(filter);
 
