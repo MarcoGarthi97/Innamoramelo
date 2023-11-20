@@ -36,7 +36,7 @@ namespace InnamorameloAPI.Models
             return secretCode;
         }
 
-        internal SecretCodeDTO GetSecretCode(ObjectId idUser, bool reload = true)
+        internal SecretCodeDTO? GetSecretCode(ObjectId idUser, bool reload = true)
         {
             //BUG: quando salvo la data di creazione su atlas mi cambia l'orario come se ci fosse un fuso orario diverso 
             try
@@ -56,7 +56,7 @@ namespace InnamorameloAPI.Models
                         newSecretCode.IdUser = idUser;
                         InsertSecretCode(newSecretCode);
 
-                        DeleteSecretCode(find.Id);
+                        DeleteSecretCodeByCode(find.Id);
 
                         find = newSecretCode;
                     }
@@ -101,15 +101,73 @@ namespace InnamorameloAPI.Models
             }
         }
 
-        internal bool DeleteSecretCode(ObjectId id)
+        internal bool DeleteSecretCodeByCode(ObjectId id)
+        {
+            try
+            {
+                var filter = Builders<SecretCodeAPI>.Filter.Eq(x => x.Id, id);
+                var delete = DeleteSecretCode(filter);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return false;
+            }
+        }
+
+        internal bool DeleteSecretCodeByUser(ObjectId id)
+        {
+            try
+            {
+                var filter = Builders<SecretCodeAPI>.Filter.Eq(x => x.IdUser, id);
+                var delete = DeleteSecretCode(filter);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return false;
+            }
+        }
+
+        private bool DeleteSecretCode(FilterDefinition<SecretCodeAPI> filter)
         {
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
                 IMongoCollection<SecretCodeAPI> secretCodes = innamoramelo.GetCollection<SecretCodeAPI>("SecretCodes");
 
-                var filter = Builders<SecretCodeAPI>.Filter.Eq(x => x.Id, id);
                 var delete = secretCodes.DeleteOne(filter);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                return false;
+            }
+        }
+
+        internal bool ValidateUser(ObjectId id)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoCollection<UserAPI> users = innamoramelo.GetCollection<UserAPI>("Users");
+
+                var filter = Builders<UserAPI>.Filter.Eq(x => x.Id, id);
+
+                var updateDefinition = new List<UpdateDefinition<UserAPI>>();
+                updateDefinition.Add(Builders<UserAPI>.Update.Set("IsActive", true));
+
+                var updateUser = Builders<UserAPI>.Update.Combine(updateDefinition);
+                var update = users.UpdateOne(filter, updateUser);
 
                 return true;
             }

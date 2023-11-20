@@ -10,12 +10,19 @@ namespace InnamorameloAPI.Controllers
         [HttpPost("GetAuthentication", Name = "GetAuthentication")]
         public string GetAuthentication(LoginCredentials user)
         {
-            if(Validator.ValidateFields(user))
+            try
             {
-                AuthenticationAPI authentication = new AuthenticationAPI();
-                string bearer = authentication.GenerateToken(user.Email, user.Password);
+                if (Validator.ValidateFields(user))
+                {
+                    AuthenticationAPI authentication = new AuthenticationAPI();
+                    string bearer = authentication.GenerateToken(user.Email, user.Password);
 
-                return bearer;
+                    return bearer;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
 
             return "";
@@ -24,22 +31,29 @@ namespace InnamorameloAPI.Controllers
         [HttpGet("CheckAuthentication", Name = "CheckAuthentication")]
         public bool CheckAuthentication()
         {
-            string bearerToken = "";
-
-            // Ottieni l'header Authorization dalla richiesta HTTP
-            if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+            try
             {
-                // Verifica se l'header inizia con "Bearer " e ottieni il token
-                string headerValue = authHeader.ToString();
-                if (headerValue.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                string bearerToken = "";
+
+                // Ottieni l'header Authorization dalla richiesta HTTP
+                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
                 {
-                    bearerToken = headerValue.Substring("Bearer ".Length).Trim();
+                    // Verifica se l'header inizia con "Bearer " e ottieni il token
+                    string headerValue = authHeader.ToString();
+                    if (headerValue.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        bearerToken = headerValue.Substring("Bearer ".Length).Trim();
 
-                    AuthenticationAPI authentication = new AuthenticationAPI();
-                    bool check = authentication.ValidateToken(bearerToken);
+                        AuthenticationAPI authentication = new AuthenticationAPI();
+                        bool check = authentication.ValidateToken(bearerToken);
 
-                    return check;
+                        return check;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
             
             return false;

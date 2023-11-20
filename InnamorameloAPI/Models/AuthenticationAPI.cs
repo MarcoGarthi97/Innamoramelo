@@ -110,7 +110,7 @@ namespace InnamorameloAPI.Models
 
                 // Ora, puoi confrontare l'ID dell'utente estratto con i dati nel tuo database
                 var userAPI = new UserAPI();
-                var user = userAPI.GetUser(email);
+                var user = userAPI.GetUserByEmail(email);
 
                 if (user != null)
                 {
