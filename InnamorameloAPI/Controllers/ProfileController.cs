@@ -1,84 +1,17 @@
-﻿using AutoMapper;
-using InnamorameloAPI.Models;
+﻿using InnamorameloAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
 
 namespace InnamorameloAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UserController : ControllerBase
+    public class ProfileController : Controller
     {
         static private AuthenticationAPI auth = new AuthenticationAPI();
         static private MyBadRequest badRequest = new MyBadRequest();
 
-        [HttpGet("GetUser", Name = "GetUser")]
-        public ActionResult<UserDTO> GetUser()
-        {
-            try
-            {
-                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
-                {
-                    var userDTO = auth.GetUserByToken(authHeader);
-                    if (userDTO != null)
-                        return Ok(userDTO);
-                    else
-                        return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
-                }
-            }
-            catch (Exception ex)
-            {
-                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
-            }
-
-            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
-        }
-
-        //TODO: Fare la chiamata GetUserById con un altro tipo di autenticazione da livello admin
-
-        [HttpPost("InsertUser", Name = "InsertUser")]
-        public ActionResult<UserDTO> InsertUser(UserCreateViewModel user)
-        {
-            try
-            {
-                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
-                {
-                    if (auth.CheckLevelUserByToken(authHeader))
-                    {
-                        if (Validator.ValidateFields(user))
-                        {
-                            var userAPI = new UserAPI();
-
-                            var loginCredential = new LoginCredentials(user.Email);
-                            if (!userAPI.CheckUser(loginCredential, true))
-                            {
-                                var account = new AccountDTO(loginCredential.Email, loginCredential.Password, "User");
-
-                                var accountAPI = new AccountAPI();
-                                var insert = accountAPI.InsertAccount(account);
-
-                                if(insert != null)
-                                {
-                                    var result = userAPI.InsertUser(user);
-                                    return Ok(result);
-                                }
-                            }
-                        }
-                    }
-                    else
-                        return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
-                }                
-            }
-            catch (Exception ex)
-            {
-                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
-            }
-
-            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
-        }
-
-        [HttpPatch("UpdateUser", Name = "UpdateUser")]
-        public ActionResult<UserDTO> UpdateUser(UserUpdateViewModel user)
+        [HttpGet("GetProfileByUser", Name = "GetProfileByUser")]
+        public ActionResult<ProfileDTO> GetProfileByUser()
         {
             try
             {
@@ -87,50 +20,11 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var userAPI = new UserAPI();
-                        var result = userAPI.UpdateUser(userDTO.Id, user);
-
-                        if (result != null)
-                            return Ok(result);
-                        else
-                            return badRequest.CreateBadRequest("Update failed", "Update failed", 400);
-                    }
-                    else
-                        return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
-                }
-            }
-            catch (Exception ex)
-            {
-                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
-            }
-
-            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
-        }
-
-        [HttpDelete("DeleteUser", Name = "DeleteUser")]
-        public ActionResult<bool> DeleteUser()
-        {
-            try
-            {
-                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
-                {
-                    var userDTO = auth.GetUserByToken(authHeader);
-                    if (userDTO != null)
-                    {
-                        //TODO: Elimanare tutto ciò che è dell'utente
-                        var secretCodeAPI = new SecretCodeAPI();
-                        var result = secretCodeAPI.DeleteSecretCodeByUser(userDTO.Id);
-
-                        var accountAPI = new AccountAPI();
-                        result = accountAPI.DeleteAccount(userDTO.Email);
-
-                        var userAPI = new UserAPI();
-                        result = userAPI.DeleteUser(userDTO.Id);
-
                         var profileAPI = new ProfileAPI();
-                        result = profileAPI.DeleteProfileByUserId(userDTO.Id);
+                        var profile = profileAPI.GetProfileByUserId(userDTO.Id);
 
-                        return Ok(result);
+                        if(profile != null)
+                            return Ok(profile);
                     }
                     else
                         return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
@@ -143,5 +37,93 @@ namespace InnamorameloAPI.Controllers
 
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
+
+        //TODO: Fare la chiamata GetProfileById con un altro tipo di autenticazione da livello admin
+
+        [HttpPost("InsertProfile", Name = "InsertProfile")]
+        public ActionResult<ProfileDTO> InsertProfile(ProfileDTO profile)
+        {
+            try
+            {
+                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+                {
+                    var userDTO = auth.GetUserByToken(authHeader);
+                    if (userDTO != null)
+                    {
+                        var profileAPI = new ProfileAPI();
+                        var profileinserted = profileAPI.InsertProfile(profile);
+
+                        if(profileinserted != null)
+                            return Ok(profileinserted);
+                    }
+                    else
+                        return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
+                }
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
+
+        [HttpPatch("UpdateProfile", Name = "UpdateProfile")]
+        public ActionResult<ProfileDTO> UpdateProfile(ProfileDTO profile)
+        {
+            try
+            {
+                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+                {
+                    var userDTO = auth.GetUserByToken(authHeader);
+                    if (userDTO != null)
+                    {
+                        var profileAPI = new ProfileAPI();
+                        var profileUpdated = profileAPI.UpdateProfile(profile);
+
+                        if (profileUpdated != null)
+                            return Ok(profileUpdated);
+                    }
+                    else
+                        return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
+                }
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
+
+        [HttpDelete("DeleteProfile", Name = "DeleteProfile")]
+        public ActionResult<bool> DeleteProfilebyUserId()
+        {
+            try
+            {
+                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+                {
+                    var userDTO = auth.GetUserByToken(authHeader);
+                    if (userDTO != null)
+                    {
+                        var profileAPI = new ProfileAPI();
+                        var result = profileAPI.DeleteProfileByUserId(userDTO.Id);
+
+                        if(result)
+                            return Ok(result);
+                    }
+                    else
+                        return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
+                }
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
+
+        //TODO: Fare la chiamata DeleteProfileById con un altro tipo di autenticazione da livello admin
     }
 }

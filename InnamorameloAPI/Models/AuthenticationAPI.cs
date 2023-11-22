@@ -10,21 +10,22 @@ namespace InnamorameloAPI.Models
         static private readonly string _secretKey = File.ReadAllText("C:\\Users\\marco\\source\\repos\\_MyCredentials\\SecretKeyAPI.txt"); // Chiave segreta per la firma del token (conservalo in modo sicuro)
         static private readonly string _issuer = "InnamorameloAPI"; // L'emettitore del token (ad esempio il nome dell'applicazione)
 
-        internal string GenerateToken(string email, string password)
+        internal Token? GenerateToken(AccountDTO account)
         {
-            if (CheckIfUserExistsInDatabase(email, password))
+            if (CheckIfUserExistsInDatabase(account.Username, account.Password))
             {
                 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
                 var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.NameIdentifier, email),
-                    new Claim(ClaimTypes.Name, email)
+                    new Claim(ClaimTypes.NameIdentifier, account.Username),
+                    new Claim(ClaimTypes.Name, account.Username),
+                    new Claim(ClaimTypes.Role, account.Level)
                     // Puoi aggiungere altre informazioni sull'utente come ruoli, autorizzazioni, ecc.
                 };
 
-                var token = new JwtSecurityToken(
+                var tokenJwt = new JwtSecurityToken(
                     _issuer,
                     _issuer,
                     claims,
@@ -33,12 +34,14 @@ namespace InnamorameloAPI.Models
                 );
 
                 var tokenHandler = new JwtSecurityTokenHandler();
-                return tokenHandler.WriteToken(token);
+                var token = new Token(tokenHandler.WriteToken(tokenJwt), tokenJwt.ValidTo);
+
+                return token;
             }
             else
             {
                 Console.WriteLine("L'utente non è stato trovato nel database.");
-                return "";
+                return null;
             }
         }
 
@@ -130,6 +133,42 @@ namespace InnamorameloAPI.Models
             }
         }
 
+        internal bool CheckLevelUserByToken(string token)
+        {
+            token = token.Substring("Bearer ".Length).Trim();
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = GetValidationParameters();
+
+            try
+            {
+                ClaimsPrincipal claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+
+                // Controlla la scadenza del token
+                DateTime expirationDate = validatedToken.ValidTo;
+                bool isTokenExpired = expirationDate < DateTime.UtcNow;
+
+                if (isTokenExpired)
+                {
+                    Console.WriteLine("Il token è scaduto.");
+                    return false;
+                }
+
+                // Esempio di come estrarre l'ID dell'utente dal token
+                string email = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role).Value;
+
+                if (email == "Administrator")
+                    return true;
+                else
+                    return false;
+            }
+            catch (SecurityTokenException ex)
+            {
+                Console.WriteLine($"Errore nella validazione del token: {ex.Message}");
+                return false;
+            }
+        }
+
         private TokenValidationParameters GetValidationParameters()
         {
             return new TokenValidationParameters
@@ -145,13 +184,26 @@ namespace InnamorameloAPI.Models
 
         private bool CheckIfUserExistsInDatabase(string email, string password, bool onlyUser = false)
         {
-            var loginCredentials = new LoginCredentials();
-            loginCredentials.Email = email;
-            loginCredentials.Password = password;
+            //var loginCredentials = new LoginCredentials();
+            //loginCredentials.Email = email;
+            //loginCredentials.Password = password;
 
-            var user = new UserAPI();
+            //var user = new UserAPI();
 
-            return user.CheckUser(loginCredentials, onlyUser);
+            //return user.CheckUser(loginCredentials, onlyUser);
+
+            var accountAPI = new AccountAPI();
+
+            AccountDTO account;
+            if (onlyUser)
+                account = accountAPI.GetAccount(email);
+            else
+                account = accountAPI.GetAccount(email, password);
+
+            if(account != null)
+                return true;
+            else
+                return false;
         }
     }
 
@@ -169,6 +221,18 @@ namespace InnamorameloAPI.Models
         {
             Email = email;
             Password = password;
+        }
+    }
+
+    public class Token
+    {
+        public string Bearer { get; set; }
+        public DateTime Expires {  get; set; }
+        public Token() { }
+        public Token(string bearer, DateTime expires)
+        {
+            Bearer = bearer;
+            Expires = expires;
         }
     }
 }

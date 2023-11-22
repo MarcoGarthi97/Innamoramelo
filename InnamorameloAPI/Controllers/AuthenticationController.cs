@@ -1,4 +1,5 @@
-﻿using InnamorameloAPI.Models;
+﻿using AutoMapper.Internal;
+using InnamorameloAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InnamorameloAPI.Controllers
@@ -7,42 +8,46 @@ namespace InnamorameloAPI.Controllers
     [Route("[controller]")]
     public class AuthenticationController : ControllerBase
     {
+        static private MyBadRequest badRequest = new MyBadRequest();
+
         [HttpPost("GetAuthentication", Name = "GetAuthentication")]
-        public string GetAuthentication(LoginCredentials user)
+        public ActionResult<Token> GetAuthentication(LoginCredentials user)
         {
             try
             {
                 if (Validator.ValidateFields(user))
                 {
-                    AuthenticationAPI authentication = new AuthenticationAPI();
-                    string bearer = authentication.GenerateToken(user.Email, user.Password);
+                    var accountAPI = new AccountAPI();
+                    var account = accountAPI.GetAccount(user.Email, user.Password);
 
-                    return bearer;
+                    if(account != null)
+                    {
+                        var authAPI = new AuthenticationAPI();
+                        var token = authAPI.GenerateToken(account);
+
+                        return token;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
             }
 
-            return "";
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
         [HttpGet("CheckAuthentication", Name = "CheckAuthentication")]
-        public bool CheckAuthentication()
+        public ActionResult<bool> CheckAuthentication()
         {
             try
             {
-                string bearerToken = "";
-
-                // Ottieni l'header Authorization dalla richiesta HTTP
                 if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
                 {
-                    // Verifica se l'header inizia con "Bearer " e ottieni il token
                     string headerValue = authHeader.ToString();
                     if (headerValue.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                     {
-                        bearerToken = headerValue.Substring("Bearer ".Length).Trim();
+                        string bearerToken = headerValue.Substring("Bearer ".Length).Trim();
 
                         AuthenticationAPI authentication = new AuthenticationAPI();
                         bool check = authentication.ValidateToken(bearerToken);
@@ -53,10 +58,35 @@ namespace InnamorameloAPI.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
             }
-            
-            return false;
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
+
+        [HttpGet("CheckAuthenticationLevelAdmin", Name = "CheckAuthenticationLevelAdmin")]
+        public ActionResult<bool> CheckAuthenticationLevelAdmin()
+        {
+            try
+            {
+                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+                {
+                    string headerValue = authHeader.ToString();
+                    if (headerValue.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        AuthenticationAPI authentication = new AuthenticationAPI();
+                        bool check = authentication.CheckLevelUserByToken(authHeader);
+
+                        return check;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
     }
 }
