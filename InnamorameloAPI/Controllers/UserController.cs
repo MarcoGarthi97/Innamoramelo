@@ -34,7 +34,32 @@ namespace InnamorameloAPI.Controllers
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
-        //TODO: Fare la chiamata GetUserById con un altro tipo di autenticazione da livello admin
+        [HttpGet("GetUserById", Name = "GetUserById")]
+        public ActionResult<UserDTO> GetUserById(string id)
+        {
+            try
+            {
+                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+                {
+                    if (auth.CheckLevelUserByToken(authHeader))
+                    {
+                        var userAPI = new UserAPI();
+                        var user = userAPI.GetUserById(id);
+
+                        if (user != null)
+                            return Ok(user);
+                    }
+                    else
+                        return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
+                }
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
 
         [HttpPost("InsertUser", Name = "InsertUser")]
         public ActionResult<UserDTO> InsertUser(UserCreateViewModel user)
@@ -88,7 +113,7 @@ namespace InnamorameloAPI.Controllers
                     if (userDTO != null)
                     {
                         var userAPI = new UserAPI();
-                        var result = userAPI.UpdateUser(userDTO.Id, user);
+                        var result = userAPI.UpdateUser(user);
 
                         if (result != null)
                             return Ok(result);
@@ -119,7 +144,7 @@ namespace InnamorameloAPI.Controllers
                     {
                         //TODO: Elimanare tutto ciò che è dell'utente
                         var secretCodeAPI = new SecretCodeAPI();
-                        var result = secretCodeAPI.DeleteSecretCodeByUser(userDTO.Id);
+                        var result = secretCodeAPI.DeleteSecretCodeByUserId(userDTO.Id);
 
                         var accountAPI = new AccountAPI();
                         result = accountAPI.DeleteAccount(userDTO.Email);

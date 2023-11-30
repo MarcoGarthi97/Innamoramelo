@@ -7,7 +7,7 @@ namespace InnamorameloAPI.Models
 {
     public class AuthenticationAPI
     {
-        static private readonly string _secretKey = File.ReadAllText("C:\\Users\\marco\\source\\repos\\_MyCredentials\\SecretKeyAPI.txt"); // Chiave segreta per la firma del token (conservalo in modo sicuro)
+        static private readonly string _secretKey = File.ReadAllText(@"C:\Users\marco\source\repos\_MyCredentials\Innamoramelo\SecretKeyAPI.txt"); // Chiave segreta per la firma del token (conservalo in modo sicuro)
         static private readonly string _issuer = "InnamorameloAPI"; // L'emettitore del token (ad esempio il nome dell'applicazione)
 
         internal Token? GenerateToken(AccountDTO account)
@@ -29,7 +29,8 @@ namespace InnamorameloAPI.Models
                     _issuer,
                     _issuer,
                     claims,
-                    expires: DateTime.UtcNow.AddMinutes(5), // Scadenza del token
+                    //expires: DateTime.UtcNow.AddMinutes(5), // Da rimettere!
+                    expires: DateTime.UtcNow.AddDays(30), //Da togliere!
                     signingCredentials: credentials
                 );
 

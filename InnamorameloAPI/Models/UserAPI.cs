@@ -8,26 +8,13 @@ namespace InnamorameloAPI.Models
 {
     public class UserAPI
     {
-        [BsonIgnoreIfDefault]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId Id { get; set; }
-        public string? Name { get; set; }
-        public string? Phone { get; set; }
-        public string? Password { get; set; }
-        public string? Email { get; set; }
-        public DateTime? Birthday { get; set; }
-        public bool? IsActive { get; set; }
-        public bool? CreateProfile { get; set; }
-
-        public UserAPI() { }
-
         static private MongoAPI mongo = new MongoAPI();
 
         internal UserDTO? GetUserByEmail(string email)
         {
             try
             {
-                var filter = Builders<UserAPI>.Filter.Eq(x => x.Email, email);
+                var filter = Builders<UserMongoDB>.Filter.Eq(x => x.Email, email);
                 var user = GetUser(filter);
 
                 return user;
@@ -40,11 +27,11 @@ namespace InnamorameloAPI.Models
             return null;
         }
 
-        internal UserDTO? GetUserById(ObjectId id)
+        internal UserDTO? GetUserById(string id)
         {
             try
             {
-                var filter = Builders<UserAPI>.Filter.Eq(x => x.Id, id);
+                var filter = Builders<UserMongoDB>.Filter.Eq(x => x.Id, new ObjectId(id));
                 var user = GetUser(filter);
 
                 return user;
@@ -57,14 +44,14 @@ namespace InnamorameloAPI.Models
             return null;
         }
 
-        private UserDTO? GetUser(FilterDefinition<UserAPI> filter)
+        private UserDTO? GetUser(FilterDefinition<UserMongoDB> filter)
         {
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<UserAPI> users = innamoramelo.GetCollection<UserAPI>("Users");
+                IMongoCollection<UserMongoDB> users = innamoramelo.GetCollection<UserMongoDB>("Users");
 
-                var projection = Builders<UserAPI>.Projection
+                var projection = Builders<UserMongoDB>.Projection
                         .Include(x => x.Id)
                         .Include(x => x.Email)
                         .Include(x => x.Name)
@@ -73,15 +60,10 @@ namespace InnamorameloAPI.Models
                         .Include(x => x.IsActive)
                         .Include(x => x.CreateProfile);
 
-                var find = users.Find(filter).Project<UserAPI>(projection).FirstOrDefault();
+                var find = users.Find(filter).Project<UserMongoDB>(projection).FirstOrDefault();
 
-                var config = new MapperConfiguration(cfg => {
-                    cfg.CreateMap<UserAPI, UserDTO>();
-                });
-
-                IMapper mapper = config.CreateMapper();
-
-                var user = mapper.Map<UserDTO>(find);
+                var user = new UserDTO();
+                Validator.CopyProperties(find, user);
 
                 return user;
             }
@@ -98,15 +80,15 @@ namespace InnamorameloAPI.Models
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<UserAPI> users = innamoramelo.GetCollection<UserAPI>("Users");
+                IMongoCollection<UserMongoDB> users = innamoramelo.GetCollection<UserMongoDB>("Users");
 
-                var filter = Builders<UserAPI>.Filter.Eq(x => x.Email, user.Email);
+                var filter = Builders<UserMongoDB>.Filter.Eq(x => x.Email, user.Email);
                 if(!onlyUser)
-                    filter &= Builders<UserAPI>.Filter.Eq(x => x.Password, user.Password);
+                    filter &= Builders<UserMongoDB>.Filter.Eq(x => x.Password, user.Password);
                 
-                var projection = Builders<UserAPI>.Projection.Include(x => x.Email);
+                var projection = Builders<UserMongoDB>.Projection.Include(x => x.Email);
 
-                var find = users.Find(filter).Project<UserAPI>(projection).FirstOrDefault();
+                var find = users.Find(filter).Project<UserMongoDB>(projection).FirstOrDefault();
                 if (find != null)
                     return true;
                 else
@@ -140,33 +122,33 @@ namespace InnamorameloAPI.Models
             }
         }
 
-        internal UserDTO? UpdateUser(ObjectId id, UserUpdateViewModel user)
+        internal UserDTO? UpdateUser(UserUpdateViewModel user)
         {
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<UserAPI> users = innamoramelo.GetCollection<UserAPI>("Users");
+                IMongoCollection<UserMongoDB> users = innamoramelo.GetCollection<UserMongoDB>("Users");
 
-                var filter = Builders<UserAPI>.Filter.Eq(x => x.Id, id);
+                var filter = Builders<UserMongoDB>.Filter.Eq(x => x.Id, new ObjectId(user.Id));
 
-                var updateDefinition = new List<UpdateDefinition<UserAPI>>();
+                var updateDefinition = new List<UpdateDefinition<UserMongoDB>>();
 
                 if (!string.IsNullOrEmpty(user.Name))
-                    updateDefinition.Add(Builders<UserAPI>.Update.Set("Name", user.Name));
+                    updateDefinition.Add(Builders<UserMongoDB>.Update.Set("Name", user.Name));
 
                 if (!string.IsNullOrEmpty(user.Email))
-                    updateDefinition.Add(Builders<UserAPI>.Update.Set("Email", user.Email));
+                    updateDefinition.Add(Builders<UserMongoDB>.Update.Set("Email", user.Email));
 
                 if (!string.IsNullOrEmpty(user.Phone))
-                    updateDefinition.Add(Builders<UserAPI>.Update.Set("Phone", user.Phone));
+                    updateDefinition.Add(Builders<UserMongoDB>.Update.Set("Phone", user.Phone));
 
                 if (user.Birthday != null)
-                    updateDefinition.Add(Builders<UserAPI>.Update.Set("Birthday", user.Birthday));
+                    updateDefinition.Add(Builders<UserMongoDB>.Update.Set("Birthday", user.Birthday));
 
-                var updateUser = Builders<UserAPI>.Update.Combine(updateDefinition);
+                var updateUser = Builders<UserMongoDB>.Update.Combine(updateDefinition);
                 var update = users.UpdateOne(filter, updateUser);
 
-                var userUpdated = GetUserById(id);
+                var userUpdated = GetUserById(user.Id);
                 return userUpdated;
             }
             catch (Exception ex)
@@ -177,14 +159,14 @@ namespace InnamorameloAPI.Models
             }
         }
 
-        internal bool DeleteUser(ObjectId id)
+        internal bool DeleteUser(string id)
         {
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<UserAPI> users = innamoramelo.GetCollection<UserAPI>("Users");
+                IMongoCollection<UserMongoDB> users = innamoramelo.GetCollection<UserMongoDB>("Users");
 
-                var filter = Builders<UserAPI>.Filter.Eq(x => x.Id, Id);
+                var filter = Builders<UserMongoDB>.Filter.Eq(x => x.Id, new ObjectId(id));
 
                 var delete = users.DeleteOne(filter);
 
@@ -199,9 +181,21 @@ namespace InnamorameloAPI.Models
         }
     }
 
-    public class UserDTO
+    public class UserMongoDB : User
     {
+        [BsonIgnoreIfDefault]
+        [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId Id { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class UserDTO : User
+    {
+        public string Id { get; set; }
+    }
+
+    public class User
+    {
         public string? Name { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
@@ -222,6 +216,7 @@ namespace InnamorameloAPI.Models
 
     public class UserUpdateViewModel
     {
+        public string? Id { get; set; }
         public string? Name { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }

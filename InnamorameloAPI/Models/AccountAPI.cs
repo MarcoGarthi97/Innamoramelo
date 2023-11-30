@@ -21,11 +21,13 @@ namespace InnamorameloAPI.Models
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<AccountDTO> accounts = innamoramelo.GetCollection<AccountDTO>("Accounts");
+                IMongoCollection<AccountMongoDB> accounts = innamoramelo.GetCollection<AccountMongoDB>("Accounts");
 
-                var filter = Builders<AccountDTO>.Filter.Eq(x => x.Username, username);
+                var filter = Builders<AccountMongoDB>.Filter.Eq(x => x.Username, username);
+                var accountMongo = accounts.Find(filter).FirstOrDefault();
 
-                var account = accounts.Find(filter).FirstOrDefault();
+                var account = new AccountDTO();
+                Validator.CopyProperties(accountMongo, account);
 
                 return account;
             }
@@ -42,12 +44,15 @@ namespace InnamorameloAPI.Models
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<AccountDTO> accounts = innamoramelo.GetCollection<AccountDTO>("Accounts");
+                IMongoCollection<AccountMongoDB> accounts = innamoramelo.GetCollection<AccountMongoDB>("Accounts");
 
-                var filter = Builders<AccountDTO>.Filter.Eq(x => x.Username, username);
-                filter &= Builders<AccountDTO>.Filter.Eq(x => x.Password, password);
+                var filter = Builders<AccountMongoDB>.Filter.Eq(x => x.Username, username);
+                filter &= Builders<AccountMongoDB>.Filter.Eq(x => x.Password, password);
 
-                var account = accounts.Find(filter).FirstOrDefault();
+                var accountMongo = accounts.Find(filter).FirstOrDefault();
+
+                var account = new AccountDTO();
+                Validator.CopyProperties(accountMongo, account);
 
                 return account;
             }
@@ -64,9 +69,12 @@ namespace InnamorameloAPI.Models
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<AccountDTO> accounts = innamoramelo.GetCollection<AccountDTO>("Accounts");
+                IMongoCollection<AccountMongoDB> accounts = innamoramelo.GetCollection<AccountMongoDB>("Accounts");
 
-                accounts.InsertOne(account);
+                var accountMongo = new AccountMongoDB();
+                Validator.CopyProperties(account, accountMongo);
+
+                accounts.InsertOne(accountMongo);
 
                 return account;
             }
@@ -83,9 +91,9 @@ namespace InnamorameloAPI.Models
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<AccountDTO> accounts = innamoramelo.GetCollection<AccountDTO>("Accounts");
+                IMongoCollection<AccountMongoDB> accounts = innamoramelo.GetCollection<AccountMongoDB>("Accounts");
 
-                var filter = Builders<AccountDTO>.Filter.Eq(x => x.Username, username);
+                var filter = Builders<AccountMongoDB>.Filter.Eq(x => x.Username, username);
 
                 accounts.DeleteOne(filter);
 
@@ -100,12 +108,16 @@ namespace InnamorameloAPI.Models
         }
     }
 
-    public class AccountDTO
+    public class AccountMongoDB : Account
     {
+        [BsonIgnoreIfDefault]
+        [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId Id { get; set; }
-        public string? Username { get; set; }
-        public string? Password { get; set; }
-        public string? Level { get; set; }
+    }
+
+    public class AccountDTO : Account
+    {
+        public string Id { get; set; }
         public AccountDTO() { }
         public AccountDTO(string? username, string? password, string? level)
         {
@@ -113,5 +125,12 @@ namespace InnamorameloAPI.Models
             Password = password;
             Level = level;
         }
+    }
+
+    public class Account
+    {
+        public string? Username { get; set; }
+        public string? Password { get; set; }
+        public string? Level { get; set; }
     }
 }

@@ -10,8 +10,8 @@ namespace InnamorameloAPI.Controllers
         static private AuthenticationAPI auth = new AuthenticationAPI();
         static private MyBadRequest badRequest = new MyBadRequest();
 
-        [HttpGet("GetProfileByUser", Name = "GetProfileByUser")]
-        public ActionResult<ProfileDTO> GetProfileByUser()
+        [HttpGet("GetProfile", Name = "GetProfile")]
+        public ActionResult<ProfileDTO> GetProfile()
         {
             try
             {
@@ -38,10 +38,62 @@ namespace InnamorameloAPI.Controllers
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
-        //TODO: Fare la chiamata GetProfileById con un altro tipo di autenticazione da livello admin
+        [HttpGet("GetProfileById", Name = "GetProfileById")]
+        public ActionResult<ProfileDTO> GetProfileById(string id)
+        {
+            try
+            {
+                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+                {
+                    if (auth.CheckLevelUserByToken(authHeader))
+                    {
+                        var profileAPI = new ProfileAPI();
+                        var profile = profileAPI.GetProfileById(id);
+
+                        if (profile != null) 
+                            return Ok(profile);
+                    }
+                    else
+                        return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
+                }
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
+
+        [HttpGet("GetProfileByUserId", Name = "GetProfileByUserId")]
+        public ActionResult<ProfileDTO> GetProfileByUserId(string id)
+        {
+            try
+            {
+                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+                {
+                    if (auth.CheckLevelUserByToken(authHeader))
+                    {
+                        var profileAPI = new ProfileAPI();
+                        var profile = profileAPI.GetProfileByUserId(id);
+
+                        if (profile != null)
+                            return Ok(profile);
+                    }
+                    else
+                        return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
+                }
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
 
         [HttpPost("InsertProfile", Name = "InsertProfile")]
-        public ActionResult<ProfileDTO> InsertProfile(ProfileDTO profile)
+        public ActionResult<ProfileDTO> InsertProfile(ProfileViewModel profile)
         {
             try
             {
@@ -51,10 +103,18 @@ namespace InnamorameloAPI.Controllers
                     if (userDTO != null)
                     {
                         var profileAPI = new ProfileAPI();
-                        var profileinserted = profileAPI.InsertProfile(profile);
+                        var profileinserted = profileAPI.GetProfileByUserId(userDTO.Id);
+                        if(profileinserted == null)
+                        {
+                            var profileDTO = new ProfileDTO();
+                            profileDTO.UserId = userDTO.Id;
+                            Validator.CopyProperties(profile, profileDTO);
 
-                        if(profileinserted != null)
-                            return Ok(profileinserted);
+                            profileinserted = profileAPI.InsertProfile(profileDTO);
+
+                            if (profileinserted != null)
+                                return Ok(profileinserted);
+                        }                        
                     }
                     else
                         return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
@@ -69,7 +129,7 @@ namespace InnamorameloAPI.Controllers
         }
 
         [HttpPatch("UpdateProfile", Name = "UpdateProfile")]
-        public ActionResult<ProfileDTO> UpdateProfile(ProfileDTO profile)
+        public ActionResult<ProfileDTO> UpdateProfile(ProfileViewModel profileUpdate)
         {
             try
             {
@@ -79,10 +139,18 @@ namespace InnamorameloAPI.Controllers
                     if (userDTO != null)
                     {
                         var profileAPI = new ProfileAPI();
-                        var profileUpdated = profileAPI.UpdateProfile(profile);
+                        var profile = profileAPI.GetProfileByUserId(userDTO.Id);
+                        if (profile != null)
+                        {
+                            var profileDTO = new ProfileDTO();
+                            profileDTO.UserId = userDTO.Id;
+                            Validator.CopyProperties(profileUpdate, profileDTO);
 
-                        if (profileUpdated != null)
-                            return Ok(profileUpdated);
+                            var profileUpdated = profileAPI.UpdateProfile(profileDTO);
+
+                            if (profileUpdated != null)
+                                return Ok(profileUpdated);
+                        }
                     }
                     else
                         return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
@@ -97,7 +165,7 @@ namespace InnamorameloAPI.Controllers
         }
 
         [HttpDelete("DeleteProfile", Name = "DeleteProfile")]
-        public ActionResult<bool> DeleteProfilebyUserId()
+        public ActionResult<bool> DeleteProfile()
         {
             try
             {
@@ -107,10 +175,14 @@ namespace InnamorameloAPI.Controllers
                     if (userDTO != null)
                     {
                         var profileAPI = new ProfileAPI();
-                        var result = profileAPI.DeleteProfileByUserId(userDTO.Id);
+                        var profile = profileAPI.GetProfileByUserId(userDTO.Id);
+                        if (profile != null)
+                        {
+                            var result = profileAPI.DeleteProfileByUserId(userDTO.Id);
 
-                        if(result)
-                            return Ok(result);
+                            if (result)
+                                return Ok(result);
+                        }
                     }
                     else
                         return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);

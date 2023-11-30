@@ -28,8 +28,8 @@ $(document).ready(function () {
                     <label for="selectLookingFor" class="form-label">What you are looking for?</label>
                     <select class="form-select" multiple  id="selectLookingFor">
                         <option value="" selected></option>
-                        <option value="Male">Male</option>
-                        <option value="Famale">Famale</option>
+                        <option value="Man">Man</option>
+                        <option value="Woman">Woman</option>
                         <option value="Other">Other</option>
                     </select>
                 </div>
