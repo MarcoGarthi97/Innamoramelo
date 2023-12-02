@@ -1,17 +1,18 @@
 ﻿using InnamorameloAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
 namespace InnamorameloAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ProfileController : ControllerBase
+    public class PhotoController : ControllerBase
     {
         static private AuthenticationAPI auth = new AuthenticationAPI();
         static private MyBadRequest badRequest = new MyBadRequest();
 
-        [HttpGet("GetProfile", Name = "GetProfile")]
-        public ActionResult<ProfileDTO> GetProfile()
+        [HttpGet("GetPhotos", Name = "GetPhotos")]
+        public ActionResult<List<PhotoDTO>> GetPhotos()
         {
             try
             {
@@ -20,11 +21,11 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var profileAPI = new ProfileAPI();
-                        var profile = profileAPI.GetProfileByUserId(userDTO.Id);
+                        var photoAPI = new PhotoAPI();
+                        var photos = photoAPI.GetPhotosByUserId(userDTO.Id);
 
-                        if(profile != null)
-                            return Ok(profile);
+                        if(photos != null)
+                            return Ok(photos);
                     }
                     else
                         return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
@@ -38,8 +39,8 @@ namespace InnamorameloAPI.Controllers
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
-        [HttpGet("GetProfileById", Name = "GetProfileById")]
-        public ActionResult<ProfileDTO> GetProfileById(string id)
+        [HttpGet("GetPhotosByUserId", Name = "GetPhotosByUserId")]
+        public ActionResult<List<PhotoDTO>> GetPhotosByUserId(string userId)
         {
             try
             {
@@ -47,11 +48,11 @@ namespace InnamorameloAPI.Controllers
                 {
                     if (auth.CheckLevelUserByToken(authHeader))
                     {
-                        var profileAPI = new ProfileAPI();
-                        var profile = profileAPI.GetProfileById(id);
+                        var photoAPI = new PhotoAPI();
+                        var photos = photoAPI.GetPhotosByUserId(userId);
 
-                        if (profile != null) 
-                            return Ok(profile);
+                        if (photos != null)
+                            return Ok(photos);
                     }
                     else
                         return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
@@ -65,35 +66,8 @@ namespace InnamorameloAPI.Controllers
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
-        [HttpGet("GetProfileByUserId", Name = "GetProfileByUserId")]
-        public ActionResult<ProfileDTO> GetProfileByUserId(string id)
-        {
-            try
-            {
-                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
-                {
-                    if (auth.CheckLevelUserByToken(authHeader))
-                    {
-                        var profileAPI = new ProfileAPI();
-                        var profile = profileAPI.GetProfileByUserId(id);
-
-                        if (profile != null)
-                            return Ok(profile);
-                    }
-                    else
-                        return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
-                }
-            }
-            catch (Exception ex)
-            {
-                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
-            }
-
-            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
-        }
-
-        [HttpPost("InsertProfile", Name = "InsertProfile")]
-        public ActionResult<ProfileDTO> InsertProfile(ProfileViewModel profile)
+        [HttpPost("InsertPhoto", Name = "InsertPhoto")]
+        public ActionResult<PhotoDTO> InsertPhoto(IFormFile file)
         {
             try
             {
@@ -102,18 +76,28 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var profileAPI = new ProfileAPI();
-                        var profileinserted = profileAPI.GetProfileByUserId(userDTO.Id);
-                        if(profileinserted == null)
+                        var photoAPI = new PhotoAPI();
+                        var photos = photoAPI.GetPhotosByUserId(userDTO.Id);
+
+                        if (photos.Count < 3)
                         {
-                            var profileDTO = new ProfileDTO();
-                            profileDTO.UserId = userDTO.Id;
-                            Validator.CopyProperties(profile, profileDTO);
+                            using (MemoryStream ms = new MemoryStream())
+                            {
+                                file.CopyTo(ms);
 
-                            profileinserted = profileAPI.InsertProfile(profileDTO);
+                                var photo = new PhotoDTO(
+                                    userDTO.Id,
+                                    ms.ToArray(),
+                                    Path.GetFileName(file.FileName),
+                                    Path.GetExtension(file.FileName),
+                                    photos.Count
+                                    );
 
-                            if (profileinserted != null)
-                                return Ok(profileinserted);
+
+                                var insert = photoAPI.InsertPhoto(photo);
+
+                                return Ok(insert);
+                            }
                         }                        
                     }
                     else
@@ -128,8 +112,8 @@ namespace InnamorameloAPI.Controllers
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
-        [HttpPatch("UpdateProfile", Name = "UpdateProfile")]
-        public ActionResult<ProfileDTO> UpdateProfile(ProfileViewModel profileUpdate)
+        [HttpPatch("UpdatePhoto", Name = "UpdatePhoto")]
+        public ActionResult<PhotoDTO> UpdatePhoto(PhotoUpdateModel updateModel)
         {
             try
             {
@@ -138,19 +122,13 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var profileAPI = new ProfileAPI();
-                        var profile = profileAPI.GetProfileByUserId(userDTO.Id);
-                        if (profile != null)
-                        {
-                            var profileDTO = new ProfileDTO();
-                            profileDTO.UserId = userDTO.Id;
-                            Validator.CopyProperties(profileUpdate, profileDTO);
+                        var photo = new PhotoViewModel();
+                        Validator.CopyProperties(updateModel, photo);
 
-                            var profileUpdated = profileAPI.UpdateProfile(profileDTO);
+                        var photoAPI = new PhotoAPI();
+                        var update = photoAPI.UpdatePhoto(photo);
 
-                            if (profileUpdated != null)
-                                return Ok(profileUpdated);
-                        }
+                        return Ok(update);
                     }
                     else
                         return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
@@ -164,8 +142,8 @@ namespace InnamorameloAPI.Controllers
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
-        [HttpDelete("DeleteProfile", Name = "DeleteProfile")]
-        public ActionResult<bool> DeleteProfile()
+        [HttpDelete("DeletePhoto", Name = "DeletePhoto")]
+        public ActionResult<bool> DeletePhoto(string id)
         {
             try
             {
@@ -174,14 +152,13 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var profileAPI = new ProfileAPI();
-                        var profile = profileAPI.GetProfileByUserId(userDTO.Id);
-                        if (profile != null)
-                        {
-                            var result = profileAPI.DeleteProfileByUserId(userDTO.Id);
+                        var photoAPI = new PhotoAPI();
+                        var photoDTO = photoAPI.GetPhotoById(new ObjectId(id));
 
-                            if (result)
-                                return Ok(result);
+                        if(photoDTO.UserId == userDTO.Id)
+                        {
+                            var delete = photoAPI.DeletePhotoById(photoDTO);
+                            return Ok(delete);
                         }
                     }
                     else
@@ -195,7 +172,5 @@ namespace InnamorameloAPI.Controllers
 
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
-
-        //TODO: Fare la chiamata DeleteProfileById con un altro tipo di autenticazione da livello admin
     }
 }

@@ -7,8 +7,36 @@ namespace InnamorameloAPI.Models
 {
     public class PhotoAPI
     {
-        private readonly string path = File.ReadAllText(@"C:\Users\marco\source\repos\_MyCredentials\Innamoramelo\DirectoryPhoto");
+        private readonly string path = File.ReadAllText(@"C:\Users\marco\source\repos\_MyCredentials\Innamoramelo\DirectoryPhoto.txt");
         private static MongoAPI mongo = new MongoAPI();
+
+        internal PhotoDTO? GetPhotoById(ObjectId id)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
+
+                FilterDefinition<PhotoMongoDB> filter = Builders<PhotoMongoDB>.Filter.Eq(x => x.Id, id);
+                var find = photos.Find(filter).FirstOrDefault();
+
+                if (find != null)
+                {
+                    var photoDTO = new PhotoDTO();
+                    Validator.CopyProperties(find, photoDTO);
+
+                    photoDTO.Bytes = GetPhotoByDirectory(photoDTO.UserId, photoDTO.Name);
+
+                    return photoDTO;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return null;
+        }
 
         internal List<PhotoDTO>? GetPhotosByUserId(string userId)
         {
@@ -27,9 +55,9 @@ namespace InnamorameloAPI.Models
                     foreach (var photo in find)
                     {
                         var photoDTO = new PhotoDTO();
-                        Validator.CopyProperties(find, photoDTO);
+                        Validator.CopyProperties(photo, photoDTO);
 
-                        photoDTO.Bytes = GetPhotoByDirectory(photoDTO.UserId, photoDTO.Id);
+                        photoDTO.Bytes = GetPhotoByDirectory(photoDTO.UserId, photoDTO.Name);
                         if(photoDTO.Bytes != null)
                             photoList.Add(photoDTO);
                     }
@@ -45,12 +73,35 @@ namespace InnamorameloAPI.Models
             return null;
         }
 
-        private Byte[]? GetPhotoByDirectory(string userId, string id)
+        internal PhotoMongoDB? GetInfoPhotoByName(string name, ObjectId userId)
         {
             try
             {
-                var files = Directory.GetFiles(path + @"\" + userId).ToList();
-                var file = files.FirstOrDefault(x => x.Contains(id));
+                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
+
+                FilterDefinition<PhotoMongoDB> filter = Builders<PhotoMongoDB>.Filter.Eq(x => x.UserId, userId);
+                filter &= Builders<PhotoMongoDB>.Filter.Eq(x => x.Name, name);
+                var find = photos.Find(filter).FirstOrDefault(); ;
+
+                return find;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return null;
+        }
+
+        private Byte[]? GetPhotoByDirectory(string userId, string name)
+        {
+            try
+            {
+                var dir = path + @"\" + userId;
+
+                var files = Directory.GetFiles(dir).ToList();
+                var file = files.FirstOrDefault(x => x == dir + @"\" + name);
 
                 if (file != null)
                 {
@@ -65,6 +116,169 @@ namespace InnamorameloAPI.Models
 
             return null;
         }
+
+        internal PhotoDTO? InsertPhoto(PhotoDTO photoDTO)
+        {
+            try
+            {
+                var photo = new PhotoMongoDB();
+                Validator.CopyProperties(photoDTO, photo);
+
+                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
+
+                photos.InsertOne(photo);
+
+                var photoInserted = GetInfoPhotoByName(photo.Name, photo.UserId);
+                if(photoInserted != null)
+                {
+                    photoDTO.Id = photoInserted.Id.ToString();
+                    var insert = InsertPhotosByDirectory(photoDTO);
+
+                    var update = new PhotoViewModel(photoDTO.Id, photoDTO.Id + photoDTO.Extension, photoDTO.Position);
+                    var result = UpdatePhoto(update);
+                    result.Bytes = photoDTO.Bytes;
+
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return null;
+        }
+
+        private bool InsertPhotosByDirectory(PhotoDTO photoDTO)
+        {
+            try
+            {
+                string dir = path + @"\" + photoDTO.UserId;
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+
+                File.WriteAllBytes(dir + @"\" + photoDTO.Id + photoDTO.Extension, photoDTO.Bytes);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return false;
+        }
+
+        internal PhotoDTO? UpdatePhoto(PhotoViewModel photoModel)
+        {
+            try
+            {
+                var photo = new PhotoMongoDB();
+                Validator.CopyProperties(photoModel, photo);
+
+                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
+
+                var filter = Builders<PhotoMongoDB>.Filter.Eq(x => x.Id, photo.Id);
+
+                var updateDefinition = new List<UpdateDefinition<PhotoMongoDB>>();
+
+                if (photo.Name != null)
+                    updateDefinition.Add(Builders<PhotoMongoDB>.Update.Set("Name", photo.Name));
+
+                if (photo.Position != null)
+                    updateDefinition.Add(Builders<PhotoMongoDB>.Update.Set("Position", photo.Position));
+
+                var updateProfile = Builders<PhotoMongoDB>.Update.Combine(updateDefinition);
+                var update = photos.UpdateOne(filter, updateProfile);
+
+                var photoUpdated = GetPhotoById(photo.Id);
+                return photoUpdated;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return null;
+        }
+
+        internal bool DeletePhotoById(PhotoDTO photoDTO)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
+
+                var filter = Builders<PhotoMongoDB>.Filter.Eq(x => x.Id, new ObjectId(photoDTO.Id));
+                photos.DeleteOne(filter);
+
+                var result = DeletePhotoByDirectory(photoDTO.UserId, photoDTO.Name);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return false;
+        }
+
+        internal bool DeletePhotoByIdUser(string userId)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
+
+                var filter = Builders<PhotoMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(userId));
+                photos.DeleteMany(filter);
+
+                var result = DeletePhotoByDirectory(userId);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return false;
+        }
+
+        private bool DeletePhotoByDirectory(string userId)
+        {
+            try
+            {
+                var dir = path + @"\" + userId;
+                Directory.Delete(dir, true);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return false;
+        }
+
+        private bool DeletePhotoByDirectory(string userId, string name)
+        {
+            try
+            {
+                var file = path + @"\" + userId + @"\" + name;
+                File.Delete(file);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return false;
+        }
     }
 
     public class PhotoMongoDB : Photo
@@ -75,6 +289,7 @@ namespace InnamorameloAPI.Models
         [BsonIgnoreIfDefault]
         [JsonConverter(typeof(ObjectIdConverter))]
         public ObjectId UserId { get; set; }
+        public string? Extension { get; set; }
     }
 
     public class PhotoDTO : Photo
@@ -82,21 +297,47 @@ namespace InnamorameloAPI.Models
         public string? Id { get; set; }
         public string? UserId { get; set; }
         public byte[]? Bytes { get; set; }
+        public string? Extension { get; set; }
 
         public PhotoDTO() { }
-        public PhotoDTO(int? position, string? path, byte[]? bytes, int? action)
+        public PhotoDTO(string? userId, byte[]? bytes, string? name, string? extension, int position)
         {
-            Position = position;
-            Path = path;
+            UserId = userId;
             Bytes = bytes;
-            Action = action;
+            Name = name;
+            Extension = extension;
+            Position = position;
         }
+    }
+
+    public class PhotoViewModel : Photo
+    {
+        public string? Id { get; set; }
+
+        public PhotoViewModel() { }
+        public PhotoViewModel(string? id, string? name, int? position)
+        {
+            Id = id;
+            Name = name;
+            Position = position;
+        }
+    }
+
+    public class PhotoInsertModel : Photo
+    {
+        public byte[]? Bytes { get; set; }
+        public string? Extension { get; set; }
+    }
+
+    public class PhotoUpdateModel
+    {
+        public string? Id { get; set; }
+        public int? Position { get; set; }
     }
 
     public class Photo
     {
+        public string? Name { get; set; }
         public int? Position { get; set; }
-        public string? Path { get; set; }
-        public int? Action { get; set; }
     }
 }
