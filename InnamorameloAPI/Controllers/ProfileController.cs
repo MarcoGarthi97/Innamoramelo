@@ -195,7 +195,5 @@ namespace InnamorameloAPI.Controllers
 
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
-
-        //TODO: Fare la chiamata DeleteProfileById con un altro tipo di autenticazione da livello admin
     }
 }
