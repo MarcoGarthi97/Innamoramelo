@@ -155,6 +155,9 @@ namespace InnamorameloAPI.Controllers
                         var profileAPI = new ProfileAPI();
                         result = profileAPI.DeleteProfileByUserId(userDTO.Id);
 
+                        var photoAPI = new PhotoAPI();
+                        result = profileAPI.DeleteProfileByUserId(userDTO.Id);
+
                         return Ok(result);
                     }
                     else
