@@ -108,7 +108,7 @@ namespace InnamorameloAPI.Controllers
 
                         var likeAPI = new LikeAPI();
                         var likes = likeAPI.GetAllLike(likeDTO.UserId);
-                        var like = likes.FirstOrDefault(x => x.UserIdLiked == likeDTO.UserIdLiked);
+                        var like = likes.FirstOrDefault(x => x.ReceiverId == likeDTO.ReceiverId);
 
                         if(like == null)
                         {
@@ -117,7 +117,7 @@ namespace InnamorameloAPI.Controllers
                             if (insert)
                             {
                                 likes = likeAPI.GetAllLike(likeDTO.UserId);
-                                like = likes.FirstOrDefault(x => x.UserIdLiked == likeDTO.UserIdLiked);
+                                like = likes.FirstOrDefault(x => x.ReceiverId == likeDTO.ReceiverId);
 
                                 if (like != null)
                                     return Ok(like);

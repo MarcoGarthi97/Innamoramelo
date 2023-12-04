@@ -70,13 +70,13 @@ namespace InnamorameloAPI.Models
                 IMongoCollection<LikeMongoDB> likes = innamoramelo.GetCollection<LikeMongoDB>("Likes");
 
                 var filter = Builders<LikeMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(userId));
-                filter &= Builders<LikeMongoDB>.Filter.Eq(x => x.UserIdLiked, new ObjectId(userIdLiked));
+                filter &= Builders<LikeMongoDB>.Filter.Eq(x => x.ReceiverId, new ObjectId(userIdLiked));
                 var find = likes.Find(filter).FirstOrDefault();
 
                 if (find.IsLiked.Value)
                 {
                     filter = Builders<LikeMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(userIdLiked));
-                    filter &= Builders<LikeMongoDB>.Filter.Eq(x => x.UserIdLiked, new ObjectId(userId));
+                    filter &= Builders<LikeMongoDB>.Filter.Eq(x => x.ReceiverId, new ObjectId(userId));
                     find = likes.Find(filter).FirstOrDefault();
 
                     if (find.IsLiked.Value)
@@ -192,20 +192,20 @@ namespace InnamorameloAPI.Models
         public ObjectId UserId { get; set; }
         [BsonIgnoreIfDefault]
         [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId UserIdLiked { get; set; }
+        public ObjectId ReceiverId { get; set; }
     }
 
     public class LikeDTO : Like
     {
         public string? Id { get; set; }
         public string? UserId { get; set; }
-        public string? UserIdLiked { get; set; }
+        public string? ReceiverId { get; set; }
     }
 
     public class LikeInsertModel : Like
     {
         public string? UserId { get; set; }
-        public string? UserIdLiked { get; set; }
+        public string? ReceiverId { get; set; }
     }
 
     public class LikeUpdateModel
