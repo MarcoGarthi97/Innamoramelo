@@ -29,8 +29,8 @@ namespace InnamorameloAPI.Models
                     _issuer,
                     _issuer,
                     claims,
-                    //expires: DateTime.UtcNow.AddMinutes(5), // Da rimettere!
-                    expires: DateTime.UtcNow.AddDays(30), //Da togliere!
+                    expires: DateTime.UtcNow.AddMinutes(5), // Da rimettere!
+                    //expires: DateTime.UtcNow.AddDays(30), //Da togliere!
                     signingCredentials: credentials
                 );
 
@@ -185,14 +185,6 @@ namespace InnamorameloAPI.Models
 
         private bool CheckIfUserExistsInDatabase(string email, string password, bool onlyUser = false)
         {
-            //var loginCredentials = new LoginCredentials();
-            //loginCredentials.Email = email;
-            //loginCredentials.Password = password;
-
-            //var user = new UserAPI();
-
-            //return user.CheckUser(loginCredentials, onlyUser);
-
             var accountAPI = new AccountAPI();
 
             AccountDTO account;
