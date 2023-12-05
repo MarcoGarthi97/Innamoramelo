@@ -32,7 +32,31 @@ namespace InnamorameloAPI.Models
             return null;
         }
 
-        public List<ChatDTO> GetChatsByReceiverId(string receiverId, int skip, int limit)
+        public ChatDTO? GetChatsByUserId(string id, string userId)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoCollection<ChatMongoDB> chats = innamoramelo.GetCollection<ChatMongoDB>("Chats");
+
+                var filter = Builders<ChatMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(userId));
+                filter &= Builders<ChatMongoDB>.Filter.Eq(x => x.Id, new ObjectId(id));
+                var find = chats.Find(filter).FirstOrDefault();
+
+                var chat = new ChatDTO();
+                Validator.CopyProperties(find, chat);
+
+                return chat;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return null;
+        }
+
+        public List<ChatDTO>? GetChatsByReceiverId(string receiverId, int skip, int limit)
         {
             try
             {
@@ -62,7 +86,7 @@ namespace InnamorameloAPI.Models
             return null;
         }
 
-        public bool Insertchat(ChatDTO chatDTO)
+        public bool Insertchat(ChatInsertModel chatDTO)
         {
             try
             {
@@ -84,7 +108,7 @@ namespace InnamorameloAPI.Models
             return false;
         }
 
-        internal ChatDTO? UpdateChat(ChatDTO chat)
+        internal ChatDTO? UpdateChat(ChatUpdateModel chat)
         {
             try
             {
@@ -195,6 +219,18 @@ namespace InnamorameloAPI.Models
         public string? ReceiverId { get; set; }
         public int? Skip { get; set; }
         public int? Limit { get; set; }
+    }
+
+    public class ChatInsertModel : Chat
+    {
+        public string? ReceiverId { get; set; }
+    }
+
+    public class ChatUpdateModel
+    {
+        public string? Id { get; set; }
+        public string? ReceiverId { get; set; }
+        public string? Content { get; set; }
     }
 
     public class Chat
