@@ -62,35 +62,6 @@ namespace InnamorameloAPI.Models
             return new List<LikeDTO>();
         }
 
-        internal bool IsMatched(string userId, string userIdLiked)
-        {
-            try
-            {
-                IMongoDatabase innamoramelo = mongo.GetDatabase();
-                IMongoCollection<LikeMongoDB> likes = innamoramelo.GetCollection<LikeMongoDB>("Likes");
-
-                var filter = Builders<LikeMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(userId));
-                filter &= Builders<LikeMongoDB>.Filter.Eq(x => x.ReceiverId, new ObjectId(userIdLiked));
-                var find = likes.Find(filter).FirstOrDefault();
-
-                if (find.IsLiked.Value)
-                {
-                    filter = Builders<LikeMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(userIdLiked));
-                    filter &= Builders<LikeMongoDB>.Filter.Eq(x => x.ReceiverId, new ObjectId(userId));
-                    find = likes.Find(filter).FirstOrDefault();
-
-                    if (find.IsLiked.Value)
-                        return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-
-            return false;
-        }
-
         internal bool InsertLike(LikeDTO likeDTO)
         {
             try
