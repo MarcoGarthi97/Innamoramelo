@@ -32,7 +32,7 @@ namespace InnamorameloAPI.Models
             return null;
         }
 
-        public List<ChatDTO> GetChatsByReceiverId(string receiverId, int limit = 30)
+        public List<ChatDTO> GetChatsByReceiverId(string receiverId, int skip, int limit)
         {
             try
             {
@@ -40,7 +40,7 @@ namespace InnamorameloAPI.Models
                 IMongoCollection<ChatMongoDB> chats = innamoramelo.GetCollection<ChatMongoDB>("Chats");
 
                 var filter = Builders<ChatMongoDB>.Filter.Eq(x => x.ReceiverId, new ObjectId(receiverId));
-                var find = chats.Find(filter).Limit(limit).SortByDescending(x => x.Timestamp).ToList();
+                var find = chats.Find(filter).Skip(skip).Limit(limit).SortByDescending(x => x.Timestamp).ToList();
 
                 var chatList = new List<ChatDTO>();
 
@@ -188,6 +188,13 @@ namespace InnamorameloAPI.Models
         public string? Id { get; set; }
         public string? UserId { get; set; }
         public string? ReceiverId { get; set; }
+    }
+
+    public class ChatGetByReceiverModel
+    {
+        public string? ReceiverId { get; set; }
+        public int? Skip { get; set; }
+        public int? Limit { get; set; }
     }
 
     public class Chat
