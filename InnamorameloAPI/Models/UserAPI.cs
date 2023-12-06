@@ -3,7 +3,6 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Newtonsoft.Json;
 using AutoMapper;
-using InnamorameloAPI.Models;
 
 namespace InnamorameloAPI.Models
 {
@@ -180,41 +179,41 @@ namespace InnamorameloAPI.Models
                 return false;
             }
         }
-    }   
-}
-public class UserMongoDB : User
-{
-    [BsonIgnoreIfDefault]
-    [JsonConverter(typeof(ObjectIdConverter))]
-    public ObjectId Id { get; set; }
-    public string Password { get; set; }
-}
+    }
 
-public class UserDTO : User
-{
-    public string Id { get; set; }
-}
+    public class UserMongoDB : User
+    {
+        [BsonIgnoreIfDefault]
+        [JsonConverter(typeof(ObjectIdConverter))]
+        public ObjectId Id { get; set; }
+        public string Password { get; set; }
+    }
 
-public class User
-{
-    public string? Name { get; set; }
-    public string? Email { get; set; }
-    public string? Phone { get; set; }
-    public DateTime? Birthday { get; set; }
-    public bool? IsActive { get; set; }
-    public bool? CreateProfile { get; set; }
-}
+    public class UserDTO : User
+    {
+        public string Id { get; set; }
+    }
 
-public class UserCreateViewModel
-{
-    public string? Name { get; set; }
-    public string? Email { get; set; }
-    public string? Password { get; set; }
-    public string? Phone { get; set; }
-    public DateTime? Birthday { get; set; }
-}
+    public class User
+    {
+        public string? Name { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public DateTime? Birthday { get; set; }
+        public bool? IsActive { get; set; }
+        public bool? CreateProfile { get; set; }
+    }
 
-public class UserUpdateViewModel
+    public class UserCreateViewModel
+    {
+        public string? Name { get; set; }
+        public string? Email { get; set; }
+        public string? Password { get; set; }
+        public string? Phone { get; set; }
+        public DateTime? Birthday { get; set; }
+    }
+
+    public class UserUpdateViewModel
     {
         public string? Id { get; set; }
         public string? Name { get; set; }
@@ -222,4 +221,4 @@ public class UserUpdateViewModel
         public string? Phone { get; set; }
         public DateTime? Birthday { get; set; }
     }
-
+}
