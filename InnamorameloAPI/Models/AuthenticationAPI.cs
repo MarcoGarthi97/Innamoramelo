@@ -200,17 +200,17 @@ namespace InnamorameloAPI.Models
         }
     }
 
-    public class LoginCredentials
+    public class AuthenticationDTO
     {
         public string Email { get; set; }
         public string Password { get; set; }
 
-        public LoginCredentials() { }
-        public LoginCredentials(string email)
+        public AuthenticationDTO() { }
+        public AuthenticationDTO(string email)
         {
             Email = email;
         }
-        public LoginCredentials(string email, string password)
+        public AuthenticationDTO(string email, string password)
         {
             Email = email;
             Password = password;

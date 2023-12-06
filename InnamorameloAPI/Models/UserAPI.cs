@@ -75,7 +75,7 @@ namespace InnamorameloAPI.Models
             return null;
         }
 
-        internal bool CheckUser(LoginCredentials user, bool onlyUser)
+        internal bool CheckUser(AuthenticationDTO user, bool onlyUser)
         {
             try
             {

@@ -11,7 +11,7 @@ namespace InnamorameloAPI.Controllers
         static private MyBadRequest badRequest = new MyBadRequest();
 
         [HttpPost("GetAuthentication", Name = "GetAuthentication")]
-        public ActionResult<Token> GetAuthentication(LoginCredentials user)
+        public ActionResult<Token> GetAuthentication(AuthenticationDTO user)
         {
             try
             {
