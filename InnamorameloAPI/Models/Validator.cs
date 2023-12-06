@@ -40,12 +40,20 @@ namespace InnamorameloAPI.Models
                 var destinationProperty = destinationProperties.FirstOrDefault(p => p.Name == sourceProperty.Name);
 
                 if (destinationProperty != null && destinationProperty.CanWrite)
-                {
-                    var sourceValue = sourceProperty.GetValue(source);
-                    var destinationValue = ConvertValue(sourceValue, destinationProperty.PropertyType);
-                    destinationProperty.SetValue(destination, destinationValue);
+                {                    
+                    try
+                    {
+                        var sourceValue = sourceProperty.GetValue(source);
+                        Type destinationType = destinationProperty.PropertyType;
+                        var destinationValue = ConvertValue(sourceValue, destinationProperty.PropertyType);
+                        destinationProperty.SetValue(destination, destinationValue);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
-            }
+            }            
         }
 
         static object ConvertValue(object value, Type destinationType)
@@ -62,9 +70,9 @@ namespace InnamorameloAPI.Models
 
             if (value is string stringValue)
             {
-                if (destinationType == typeof(ObjectId))
+                if (destinationType.FullName.Contains("ObjectId"))
                 {
-                    return ObjectId.Parse(stringValue);
+                    return new ObjectId(stringValue);
                 }
                 else if (destinationType == typeof(Guid))
                 {

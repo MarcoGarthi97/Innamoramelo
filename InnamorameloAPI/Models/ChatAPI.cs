@@ -2,6 +2,8 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Newtonsoft.Json;
+using System.Diagnostics.Metrics;
+using System.Linq;
 
 namespace InnamorameloAPI.Models
 {
@@ -56,14 +58,34 @@ namespace InnamorameloAPI.Models
             return null;
         }
 
-        public List<ChatDTO>? GetChatsByReceiverId(string receiverId, int skip, int limit)
+        public List<ChatDTO>? GetConversation(string id, ChatGetConversationModel chatModel)
+        {
+            try
+            {
+                var chatList = GetConversation(id, chatModel.ReceiverId, chatModel.Skip.Value, chatModel.Limit.Value);
+                chatList.AddRange(GetConversation(chatModel.ReceiverId, id, chatModel.Skip.Value, chatModel.Limit.Value));
+
+                chatList = chatList.OrderByDescending(x => x.Timestamp).Take(chatModel.Limit.Value).ToList();
+
+                return chatList;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return null;
+        }
+
+        public List<ChatDTO>? GetConversation(string id, string receiverId, int skip, int limit)
         {
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
                 IMongoCollection<ChatMongoDB> chats = innamoramelo.GetCollection<ChatMongoDB>("Chats");
 
-                var filter = Builders<ChatMongoDB>.Filter.Eq(x => x.ReceiverId, new ObjectId(receiverId));
+                var filter = Builders<ChatMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(id));
+                filter &= Builders<ChatMongoDB>.Filter.Eq(x => x.ReceiverId, new ObjectId(receiverId));
                 var find = chats.Find(filter).Skip(skip).Limit(limit).SortByDescending(x => x.Timestamp).ToList();
 
                 var chatList = new List<ChatDTO>();
@@ -86,7 +108,37 @@ namespace InnamorameloAPI.Models
             return null;
         }
 
-        public bool Insertchat(ChatInsertModel chatDTO)
+        public List<ChatDTO>? GetChatsByReceiverId(ChatGetConversationModel chatModel)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoCollection<ChatMongoDB> chats = innamoramelo.GetCollection<ChatMongoDB>("Chats");
+
+                var filter = Builders<ChatMongoDB>.Filter.Eq(x => x.ReceiverId, new ObjectId(chatModel.ReceiverId));
+                var find = chats.Find(filter).Skip(chatModel.Skip).Limit(chatModel.Limit).SortByDescending(x => x.Timestamp).ToList();
+
+                var chatList = new List<ChatDTO>();
+
+                foreach (var chatFind in find)
+                {
+                    var chat = new ChatDTO();
+                    Validator.CopyProperties(chatFind, chat);
+
+                    chatList.Add(chat);
+                }
+
+                return chatList;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return null;
+        }
+
+        public bool Insertchat(ChatDTO chatDTO)
         {
             try
             {
@@ -121,6 +173,9 @@ namespace InnamorameloAPI.Models
 
                 if (!string.IsNullOrEmpty(chat.Content))
                     updateDefinition.Add(Builders<ChatMongoDB>.Update.Set("Content", chat.Content));
+
+                if(chat.Viewed != null)
+                    updateDefinition.Add(Builders<ChatMongoDB>.Update.Set("Viewed", chat.Viewed));
 
                 var updateChat = Builders<ChatMongoDB>.Update.Combine(updateDefinition);
                 var update = likes.UpdateOne(filter, updateChat);
@@ -214,16 +269,18 @@ namespace InnamorameloAPI.Models
         public string? ReceiverId { get; set; }
     }
 
-    public class ChatGetByReceiverModel
+    public class ChatGetConversationModel
     {
         public string? ReceiverId { get; set; }
         public int? Skip { get; set; }
         public int? Limit { get; set; }
     }
 
-    public class ChatInsertModel : Chat
+    public class ChatInsertModel
     {
         public string? ReceiverId { get; set; }
+        public string? Content { get; set; }
+        public DateTime? Timestamp { get; set; }
     }
 
     public class ChatUpdateModel
@@ -231,11 +288,13 @@ namespace InnamorameloAPI.Models
         public string? Id { get; set; }
         public string? ReceiverId { get; set; }
         public string? Content { get; set; }
+        public DateTime? Viewed { get; set; }
     }
 
     public class Chat
     {
         public string? Content { get; set; }
         public DateTime? Timestamp { get; set; }
+        public DateTime? Viewed { get; set; }
     }
 }
