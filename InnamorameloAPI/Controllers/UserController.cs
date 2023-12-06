@@ -158,6 +158,12 @@ namespace InnamorameloAPI.Controllers
                         var photoAPI = new PhotoAPI();
                         result = profileAPI.DeleteProfileByUserId(userDTO.Id);
 
+                        var likeAPI = new LikeAPI();
+                        result = likeAPI.DeleteLikesByUserId(userDTO.Id);
+
+                        var chatAPI = new ChatAPI();
+                        result = chatAPI.DeleteChatByUserId(userDTO.Id);
+
                         return Ok(result);
                     }
                     else
