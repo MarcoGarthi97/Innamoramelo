@@ -1,9 +1,13 @@
 using Innamoramelo;
+using Innamoramelo.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var startup = new Startup(builder.Configuration);
 
 startup.ConfigureServices(builder.Services);
+
+var urlAPI = builder.Configuration["UrlAPI"];
+var urlAdminCredentials = builder.Configuration["AdminCredentials"];
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

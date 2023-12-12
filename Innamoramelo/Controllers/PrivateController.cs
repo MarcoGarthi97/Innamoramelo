@@ -12,36 +12,21 @@ namespace Innamoramelo.Controllers
             httpContext = _httpContext;
         }
 
-        internal User GetSessionUser()
+        internal string? GetSession(string key)
         {
-            string json = httpContext.Session.GetString("InfoUser");
-            if (json != null)
+            if (httpContext.Session.Keys.Contains(key))
             {
-                var user = JsonConvert.DeserializeObject<User>(json);
-                if (user != null)
-                    return user;
+                string json = httpContext.Session.GetString(key);
+
+                return json;
             }
-
-            return new User();
+            else
+                return null;
         }
 
-        internal int? GetLogon()
+        internal void Session(string key, string json)
         {
-            int? logon = httpContext.Session.GetInt32("Logon");
-            if (logon != null)
-                return logon;
-
-            return null;
-        }
-
-        internal void PutSessionUser(string json)
-        {
-            httpContext.Session.SetString("InfoUser", json);
-        }
-
-        internal void PutLogon(int val)
-        {
-            httpContext.Session.SetInt32("Logon", val);
+            httpContext.Session.SetString(key, json);
         }
     }
 }

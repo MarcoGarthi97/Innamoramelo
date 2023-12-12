@@ -1,137 +1,101 @@
 ﻿using Innamoramelo.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Org.BouncyCastle.Asn1.Crmf;
-using RestSharp;
-using ZstdSharp.Unsafe;
+using System.IO;
 
 namespace Innamoramelo.Controllers
 {
     public class LoginController : Controller
     {
+        private MyBadRequest badRequest = new MyBadRequest();
         private PrivateController _privateController;
+        
+        private string Token;
+        private string TokenAdmin;
+
         private HttpContext LoadContext()
         {
             return HttpContext;
         }
 
-        public JsonResult Logon(string json)
+        private IConfiguration Config;
+        public LoginController(IConfiguration _config)
         {
-            try
-            {
-                var user = JsonConvert.DeserializeObject<User>(json);
-                bool result = GetLogin(user);
-                
-                return Json(result);
-            }
-            catch (Exception ex)
-            {
-                
-            }
-
-            return Json(false);
+            Config = _config;
         }
 
-        public JsonResult Register(string json)
-        {
+        private void Authentication()
+        {            
             try
             {
-                var user = JsonConvert.DeserializeObject<User>(json);
-
-                Mongo mongo = new Mongo();
-                var findUser = mongo.GetUser(user, true).Result;
-
-                if (findUser == null)
+                var tokenJson = _privateController.GetSession("token");
+                if (tokenJson != null)
                 {
-                    user.SecretCode = CreateSecretCode();
-                    user.IsActive = false;
-                    user.CreateProfile = false;
+                    var tokenDTO = JsonConvert.DeserializeObject<TokenDTO>(tokenJson);
 
-                    _privateController = new(LoadContext());
+                    var authenticationAPI = new AuthenticationAPI(Config);
+                    var isExpired = authenticationAPI.ValidationBearerAsync(tokenDTO).Result;
 
-                    var insert = mongo.InsertUser(user).Result;
-                    if (insert)
+                    if(isExpired == null || !isExpired.Value)
                     {
-                        json = JsonConvert.SerializeObject(user);
-                        _privateController.PutSessionUser(json);
-
-                        SendCode();
-                        return Json(true);
-                    }
-
-                }
-            }
-            catch (Exception ex)
-            {
-
-            }
-
-            return Json(false);
-        }
-
-        public JsonResult CheckSecretCode(string json)
-        {
-            try
-            {
-                _privateController = new(LoadContext());
-
-                var user = _privateController.GetSessionUser();
-                var secretCode = JsonConvert.DeserializeObject<SecretCode>(json);
-
-                if (user != null && user.SecretCode != null && secretCode != null)
-                {
-                    DateTime now = DateTime.Now;
-                    var difference = now - user.SecretCode.Created;
-
-                    if (secretCode.Code == user.SecretCode.Code && difference.Value.TotalMinutes < 5)
-                    {
-                        user.IsActive = true;
-
-                        Mongo mongo = new Mongo();
-                        var update = mongo.UpdateUser(user).Result;
-
-                        if (update)
+                        var credentialsJson = _privateController.GetSession("credentials");
+                        if (credentialsJson != null)
                         {
-                            string jsonUser = JsonConvert.SerializeObject(user);
-                            _privateController.PutSessionUser(jsonUser);
+                            var credentials = JsonConvert.DeserializeObject<AuthenticationDTO>(credentialsJson);
+                            tokenDTO = authenticationAPI.GetBearerAsync(credentials).Result;
 
-                            return Json(true);
+                            string json = JsonConvert.SerializeObject(tokenDTO);
+                            _privateController.Session("token", json);
+
+                            Token = tokenDTO.Bearer;
                         }
-                            
                     }
                 }
             }
             catch (Exception ex)
             {
-
+                
             }
-
-            return Json(false);
         }
 
-        public JsonResult ResendCode()
+        private void AuthenticationAdmin()
         {
             try
-            {                
-                var _user = _privateController.GetSessionUser();
+            {
+                var authenticationAPI = new AuthenticationAPI(Config);
+                var tokenJson = _privateController.GetSession("tokenAdmin");
 
-                var user = new User();
-                user.Id = _user.Id;
-                user.SecretCode = CreateSecretCode();
-
-                Mongo mongo = new Mongo();
-                var insert = mongo.UpdateUser(user).Result;
-                if (insert)
+                if (tokenJson == null)
                 {
-                    _user = mongo.GetUser(user, true).Result;
-                    if(_user != null)
+                    var credentialsJson = System.IO.File.ReadAllText(Config["AdminCredentials"]);
+
+                    var credentials = JsonConvert.DeserializeObject<AuthenticationDTO>(credentialsJson);
+                    var tokenDTO = authenticationAPI.GetBearerAsync(credentials).Result;
+
+                    string json = JsonConvert.SerializeObject(tokenDTO);
+                    _privateController.Session("tokenAdmin", json);
+
+                    TokenAdmin = tokenDTO.Bearer;
+                }
+                else
+                {
+                    var tokenDTO = JsonConvert.DeserializeObject<TokenDTO>(tokenJson);
+
+                    var isExpired = authenticationAPI.ValidationBearerAsync(tokenDTO).Result;
+
+                    if (isExpired == null || !isExpired.Value)
                     {
-                        string json = JsonConvert.SerializeObject(_user);
-                        HttpContext.Session.SetString("InfoUser", json);
+                        var credentialsJson = _privateController.GetSession("credentialsAdmin");
+                        if (credentialsJson != null)
+                        {
+                            var credentials = JsonConvert.DeserializeObject<AuthenticationDTO>(credentialsJson);
+                            tokenDTO = authenticationAPI.GetBearerAsync(credentials).Result;
 
-                        SendCode();
+                            string json = JsonConvert.SerializeObject(tokenDTO);
+                            _privateController.Session("tokenAdmin", json);
 
-                        return Json(true);
+                            TokenAdmin = tokenDTO.Bearer;
+                        }
                     }
                 }
             }
@@ -139,58 +103,54 @@ namespace Innamoramelo.Controllers
             {
 
             }
-
-            return Json(false);
         }
 
-        public JsonResult Logout()
+        public ActionResult<bool> Logon(AuthenticationDTO authenticationDTO)
         {
-            HttpContext.Session.Clear();
-
-            return Json(true);
-        }
-
-        private bool GetLogin(User user)
-        {
-            if (user != null)
+            try
             {
-                Mongo mongo = new Mongo();
-                var findUser = mongo.GetUser(user, true).Result;
+                var authenticationAPI = new AuthenticationAPI(Config);
+                var tokenDTO = authenticationAPI.GetBearerAsync(authenticationDTO).Result;
 
-                if (findUser != null && findUser.IsActive == true)
+                if(tokenDTO != null)
                 {
-                    string userJson = JsonConvert.SerializeObject(findUser);
+                    string json = JsonConvert.SerializeObject(tokenDTO);
+                    _privateController.Session("token", json);
 
-                    _privateController = new(LoadContext());
-                    _privateController.PutSessionUser(userJson);
-                    _privateController.PutLogon(1);
+                    json = JsonConvert.SerializeObject(authenticationDTO);
+                    _privateController.Session("credentials", json);
 
-                    return true;
+                    return Ok(true);
                 }
             }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
 
-            return false;
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
-        private void SendCode()
+        public ActionResult<SecretCodeDTO> Register(UserCreateViewModel userCreateViewModel)
         {
-            var user = _privateController.GetSessionUser();
+            try
+            {
+                AuthenticationAdmin();
 
-            string body = "Thank you for registering for Innamoramelo.\r\n\r\nTo complete your registration, please enter the following code in the registration form:\r\n\r\n" + user.SecretCode.Code + "\r\n\r\nIf you have any questions, please do not hesitate to contact us.\r\n\r\nThank you!";
-            var sendMail = new SendMail(user.Email, "Innamoramelo: Code registration", body);
+                var userAPI = new UserAPI(Config);
+                var userDTO = userAPI.InsertUser(userCreateViewModel, TokenAdmin);
 
-            var google = new Google();
-            google.SendMail(sendMail);
-        }
+                if(userDTO != null)
+                {
 
-        private SecretCode CreateSecretCode()
-        {
-            Random rnd = new Random();
-            int num = rnd.Next(10000, 99999);
+                }
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
 
-            var secretCode = new SecretCode(num.ToString(), DateTime.Now);
-
-            return secretCode;
-        }        
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }    
     }
 }

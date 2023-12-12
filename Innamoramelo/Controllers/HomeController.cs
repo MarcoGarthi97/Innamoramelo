@@ -6,7 +6,6 @@ namespace Innamoramelo.Controllers
 {
     public class HomeController : Controller
     {
-        private Authentication authentication = new();
         public IActionResult Index()
         {
             return View();
@@ -36,12 +35,13 @@ namespace Innamoramelo.Controllers
         public IActionResult Profile()
         {
             return View(); //Da cancellare
-            return View(authentication.GetSite("Profile", HttpContext));
+            //return View(authentication.GetSite("Profile", HttpContext));
         }
 
         public IActionResult HomePage()
         {
-            return View(authentication.GetSite("HomePage", HttpContext));
+            return View();
+            //return View(authentication.GetSite("HomePage", HttpContext));
         }
     }
 }
