@@ -148,7 +148,7 @@ namespace InnamorameloAPI.Models
                 var updateUser = Builders<UserMongoDB>.Update.Combine(updateDefinition);
                 var update = users.UpdateOne(filter, updateUser);
 
-                var userUpdated = GetUserById(user.Id);
+                var userUpdated = GetUserById(id);
                 return userUpdated;
             }
             catch (Exception ex)
