@@ -122,14 +122,14 @@ namespace InnamorameloAPI.Models
             }
         }
 
-        internal UserDTO? UpdateUser(UserUpdateViewModel user)
+        internal UserDTO? UpdateUser(UserUpdateViewModel user, string id)
         {
             try
             {
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
                 IMongoCollection<UserMongoDB> users = innamoramelo.GetCollection<UserMongoDB>("Users");
 
-                var filter = Builders<UserMongoDB>.Filter.Eq(x => x.Id, new ObjectId(user.Id));
+                var filter = Builders<UserMongoDB>.Filter.Eq(x => x.Id, new ObjectId(id));
 
                 var updateDefinition = new List<UpdateDefinition<UserMongoDB>>();
 
@@ -215,7 +215,6 @@ namespace InnamorameloAPI.Models
 
     public class UserUpdateViewModel
     {
-        public string? Id { get; set; }
         public string? Name { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }

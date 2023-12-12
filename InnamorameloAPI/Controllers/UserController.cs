@@ -113,7 +113,7 @@ namespace InnamorameloAPI.Controllers
                     if (userDTO != null)
                     {
                         var userAPI = new UserAPI();
-                        var result = userAPI.UpdateUser(user);
+                        var result = userAPI.UpdateUser(user, userDTO.Id);
 
                         if (result != null)
                             return Ok(result);
