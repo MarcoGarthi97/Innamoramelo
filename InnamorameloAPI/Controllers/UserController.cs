@@ -74,7 +74,7 @@ namespace InnamorameloAPI.Controllers
                         {
                             var userAPI = new UserAPI();
 
-                            var loginCredential = new LoginCredentials(user.Email);
+                            var loginCredential = new AuthenticationDTO(user.Email);
                             if (!userAPI.CheckUser(loginCredential, true))
                             {
                                 var account = new AccountDTO(loginCredential.Email, loginCredential.Password, "User");
