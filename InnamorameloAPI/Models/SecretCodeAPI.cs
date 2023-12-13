@@ -1,7 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 using AutoMapper;
 
 namespace InnamorameloAPI.Models
@@ -185,41 +183,5 @@ namespace InnamorameloAPI.Models
                 return false;
             }
         }
-    }
-
-    public class SecretCodeMongoDB : SecretCode
-    {
-
-        [BsonIgnoreIfDefault]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId Id { get; set; }
-        [BsonIgnoreIfDefault]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId UserId { get; set; }
-        public SecretCodeMongoDB() { }
-        public SecretCodeMongoDB(string? code, DateTime? created)
-        {
-            Code = code;
-            Created = created;
-        }
-    }
-
-    public class SecretCodeDTO : SecretCode
-    {
-        public string Id { get; set; }
-        public string IdUser { get; set; }
-
-        public SecretCodeDTO() { }
-        public SecretCodeDTO(string? code, DateTime? created)
-        {
-            Code = code;
-            Created = created;
-        }
-    }
-
-    public class SecretCode
-    {
-        public string? Code { get; set; }
-        public DateTime? Created { get; set; }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 
 namespace InnamorameloAPI.Models
 {
@@ -279,65 +277,5 @@ namespace InnamorameloAPI.Models
 
             return false;
         }
-    }
-
-    public class PhotoMongoDB : Photo
-    {
-        [BsonIgnoreIfDefault]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId Id { get; set; }
-        [BsonIgnoreIfDefault]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId UserId { get; set; }
-        public string? Extension { get; set; }
-    }
-
-    public class PhotoDTO : Photo
-    {
-        public string? Id { get; set; }
-        public string? UserId { get; set; }
-        public byte[]? Bytes { get; set; }
-        public string? Extension { get; set; }
-
-        public PhotoDTO() { }
-        public PhotoDTO(string? userId, byte[]? bytes, string? name, string? extension, int position)
-        {
-            UserId = userId;
-            Bytes = bytes;
-            Name = name;
-            Extension = extension;
-            Position = position;
-        }
-    }
-
-    public class PhotoViewModel : Photo
-    {
-        public string? Id { get; set; }
-
-        public PhotoViewModel() { }
-        public PhotoViewModel(string? id, string? name, int? position)
-        {
-            Id = id;
-            Name = name;
-            Position = position;
-        }
-    }
-
-    public class PhotoInsertModel : Photo
-    {
-        public byte[]? Bytes { get; set; }
-        public string? Extension { get; set; }
-    }
-
-    public class PhotoUpdateModel
-    {
-        public string? Id { get; set; }
-        public int? Position { get; set; }
-    }
-
-    public class Photo
-    {
-        public string? Name { get; set; }
-        public int? Position { get; set; }
     }
 }

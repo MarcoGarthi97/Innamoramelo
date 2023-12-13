@@ -1,6 +1,4 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
-using Newtonsoft.Json;
+﻿using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace InnamorameloAPI.Models
@@ -151,49 +149,5 @@ namespace InnamorameloAPI.Models
 
             return false;
         }
-    }
-
-    public class LikeMongoDB : Like
-    {
-        [BsonIgnoreIfDefault]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId Id { get; set; }
-        [BsonIgnoreIfDefault]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId UserId { get; set; }
-        [BsonIgnoreIfDefault]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId ReceiverId { get; set; }
-    }
-
-    public class LikeDTO : Like
-    {
-        public string? Id { get; set; }
-        public string? UserId { get; set; }
-        public string? ReceiverId { get; set; }
-    }
-
-    public class LikeInsertModel : Like
-    {
-        public string? UserId { get; set; }
-        public string? ReceiverId { get; set; }
-    }
-
-    public class LikeUpdateModel
-    {
-        public string? Id { get; set; }
-        public bool? IsLiked { get; set; }
-    }
-
-    public class LikeDeleteModel
-    {
-        public string? Id { get; set; }
-        public string? UserId { get; set; }
-    }
-
-    public class Like
-    {
-        public DateTime? Created { get; set; }
-        public bool? IsLiked { get; set; }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 
 namespace InnamorameloAPI.Models
 {
@@ -193,39 +191,5 @@ namespace InnamorameloAPI.Models
                 return false;
             }
         }
-    }
-
-    public class ProfileMongoDB : Profile
-    {
-        [BsonIgnoreIfDefault]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId Id { get; set; }
-        [BsonIgnoreIfDefault]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId UserId { get; set; }
-    }
-
-    public class ProfileDTO : Profile
-    {
-        public string? Id { get; set; }
-        public string? UserId { get; set; }
-    }
-
-    public class ProfileViewModel : Profile
-    {
-        //public string? UserId { get; set; }
-    }
-
-    public class Profile
-    {
-        public string? Gender { get; set; }
-        public string? SexualOrientation { get; set; }
-        public string? LookingFor { get; set; }
-        public string? School { get; set; }
-        public string? Work { get; set; }
-        public string? Bio { get; set; }
-        public List<string>? Passions { get; set; }
-        public LocationDTO? Location { get; set; }
-        public int? RangeKm { get; set; }
     }
 }

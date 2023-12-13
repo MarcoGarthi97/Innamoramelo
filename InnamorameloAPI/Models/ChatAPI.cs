@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 using System.Diagnostics.Metrics;
 using System.Linq;
 
@@ -250,51 +249,5 @@ namespace InnamorameloAPI.Models
 
             return false;
         }
-    }
-
-    public class ChatMongoDB : Chat
-    {
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId Id { get; set; }
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId? UserId { get; set; }
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId? ReceiverId { get; set; }
-    }
-
-    public class ChatDTO : Chat
-    {
-        public string? Id { get; set; }
-        public string? UserId { get; set; }
-        public string? ReceiverId { get; set; }
-    }
-
-    public class ChatGetConversationModel
-    {
-        public string? ReceiverId { get; set; }
-        public int? Skip { get; set; }
-        public int? Limit { get; set; }
-    }
-
-    public class ChatInsertModel
-    {
-        public string? ReceiverId { get; set; }
-        public string? Content { get; set; }
-        public DateTime? Timestamp { get; set; }
-    }
-
-    public class ChatUpdateModel
-    {
-        public string? Id { get; set; }
-        public string? ReceiverId { get; set; }
-        public string? Content { get; set; }
-        public DateTime? Viewed { get; set; }
-    }
-
-    public class Chat
-    {
-        public string? Content { get; set; }
-        public DateTime? Timestamp { get; set; }
-        public DateTime? Viewed { get; set; }
     }
 }
