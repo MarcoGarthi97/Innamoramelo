@@ -9,7 +9,7 @@ namespace Innamoramelo.Models
         private string UrlAPI {  get; set; }
         public AuthenticationAPI(IConfiguration config)
         {
-            UrlAPI = config["urlAPI"] + "Authentication/";
+            UrlAPI = config["urlAPI"] + "/Authentication/";
         }
 
         internal async Task<TokenDTO?> GetBearerAsync(AuthenticationDTO authenticationDTO)
@@ -18,13 +18,13 @@ namespace Innamoramelo.Models
             {
                 string json = JsonConvert.SerializeObject(authenticationDTO);
 
-                var options = new RestClientOptions("")
+                var options = new RestClientOptions(UrlAPI)
                 {
                     MaxTimeout = -1,
                 };
                 var client = new RestClient(options);
 
-                var request = new RestRequest(UrlAPI + "GetAuthentication", Method.Post);
+                var request = new RestRequest("GetAuthentication", Method.Post);
                 request.AddHeader("Content-Type", "application/json");
 
                 var body = json;
@@ -47,13 +47,13 @@ namespace Innamoramelo.Models
         {
             try
             {
-                var options = new RestClientOptions("")
+                var options = new RestClientOptions(UrlAPI)
                 {
                     MaxTimeout = -1,
                 };
                 var client = new RestClient(options);
 
-                var request = new RestRequest(UrlAPI + "CheckAuthentication", Method.Get);
+                var request = new RestRequest("CheckAuthentication", Method.Get);
                 request.AddHeader("Authorization", "Bearer " + tokenDTO.Bearer);
 
                 RestResponse response = await client.ExecuteAsync(request);

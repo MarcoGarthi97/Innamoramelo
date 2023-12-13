@@ -9,21 +9,21 @@ namespace Innamoramelo.Models
         private string UrlAPI { get; set; }
         public UserAPI(IConfiguration config)
         {
-            UrlAPI = config["urlAPI"] + "User/";
+            UrlAPI = config["urlAPI"] + "/User/";
         }
 
         internal async Task<UserDTO?> GetUser(string token)
         {
             try
             {
-                var options = new RestClientOptions("")
+                var options = new RestClientOptions(UrlAPI)
                 {
                     MaxTimeout = -1,
                 };
 
                 var client = new RestClient(options);
 
-                var request = new RestRequest(UrlAPI + "GetUser", Method.Get);
+                var request = new RestRequest("GetUser", Method.Get);
                 request.AddHeader("Authorization", "Bearer " + token);
 
                 RestResponse response = await client.ExecuteAsync(request);
@@ -45,13 +45,13 @@ namespace Innamoramelo.Models
             {
                 string json = JsonConvert.SerializeObject(userModel);
 
-                var options = new RestClientOptions("")
+                var options = new RestClientOptions(UrlAPI)
                 {
                     MaxTimeout = -1,
                 };
                 var client = new RestClient(options);
 
-                var request = new RestRequest(UrlAPI + "InsertUser", Method.Post);
+                var request = new RestRequest("InsertUser", Method.Post);
                 request.AddHeader("Authorization", "Bearer " + token);
                 request.AddHeader("Content-Type", "application/json");
 
@@ -77,13 +77,13 @@ namespace Innamoramelo.Models
             {
                 string json = JsonConvert.SerializeObject(userModel);
 
-                var options = new RestClientOptions("")
+                var options = new RestClientOptions(UrlAPI)
                 {
                     MaxTimeout = -1,
                 };
                 var client = new RestClient(options);
 
-                var request = new RestRequest(UrlAPI + "UpdateUser", Method.Patch);
+                var request = new RestRequest("UpdateUser", Method.Patch);
                 request.AddHeader("Authorization", "Bearer " + token);
                 request.AddHeader("Content-Type", "application/json");
 
@@ -107,13 +107,13 @@ namespace Innamoramelo.Models
         {
             try
             {
-                var options = new RestClientOptions("")
+                var options = new RestClientOptions(UrlAPI)
                 {
                     MaxTimeout = -1,
                 };
                 var client = new RestClient(options);
 
-                var request = new RestRequest(UrlAPI + "DeleteUser", Method.Delete);
+                var request = new RestRequest("DeleteUser", Method.Delete);
                 request.AddHeader("Content-Type", "application/json");
 
                 RestResponse response = await client.ExecuteAsync(request);

@@ -39,6 +39,7 @@ $(document).ready(function () {
                 type: "POST",
                 data: { json: json },
                 success: function (result) {
+                    console.log(result)
                     $('#pinModal').modal('show')
                 },
                 error: function (error) {
@@ -63,7 +64,7 @@ $(document).ready(function () {
         $.ajax({
             url: urlVerify,
             type: "POST",
-            data: { json: json },
+            data: { json: enteredPin },
             success: function (result) {
                 console.log(result)
                 if (result) {

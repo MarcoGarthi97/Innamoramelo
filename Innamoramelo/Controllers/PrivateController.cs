@@ -12,16 +12,23 @@ namespace Innamoramelo.Controllers
             httpContext = _httpContext;
         }
 
-        internal string? GetSession(string key)
+        internal string GetSession(string key)
         {
-            if (httpContext.Session.Keys.Contains(key))
+            try
             {
-                string json = httpContext.Session.GetString(key);
+                if (httpContext.Session.Keys.Contains(key))
+                {
+                    string json = httpContext.Session.GetString(key);
 
-                return json;
+                    return json;
+                }
             }
-            else
-                return null;
+            catch(Exception ex)
+            {
+
+            }
+            
+            return "";
         }
 
         internal void Session(string key, string json)

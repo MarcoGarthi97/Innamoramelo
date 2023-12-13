@@ -36,13 +36,16 @@
     const btnHomePage = document.getElementById('homepage')
 
     btnLogin.addEventListener('click', function (e) {
-        var username = txtUsername.value
-        var password = txtPassword.value
+        var obj = {}
+        obj.Email = txtUsername.value
+        obj.Password = txtPassword.value
+
+        var json = JSON.stringify(obj)
 
         $.ajax({
             url: '@Url.Action("Logon", "Login")',
             type: "POST",
-            data: { username: username, password: password },
+            data: { json: json },
             success: function (result) {
                 if (result)
                     window.location.href = '@Url.Action("Dashboard", "Home")'
