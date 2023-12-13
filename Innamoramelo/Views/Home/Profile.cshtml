@@ -63,9 +63,11 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="input-group">
-                        <label for="inputBio" class="form-label">Biography</label>
-                        <textarea class="form-control" aria-label="With textarea" id="inputBio"></textarea>
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="inputBio" class="form-label">Biography</label>
+                            <textarea class="form-control" aria-label="With textarea" id="inputBio"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -87,7 +89,7 @@
     var urlRegister = '@Url.Action("Register", "Login")'
     var urlVerify = '@Url.Action("CheckSecretCode", "Login")'
     var urlSendMail = '@Url.Action("SendMail", "Login")'
-    var urlGetJobs = '@Url.Action("GetJobs", "Profile")'
-    var urlGetMunicipalities = '@Url.Action("GetMunicipality", "Profile")'
+    var urlGetJobs = '@Url.Action("GetJob", "Profile")'
+    var urlGetMunicipalities = '@Url.Action("GetCity", "Profile")'
 </script>
 <script src="~/js/profile.js"></script>

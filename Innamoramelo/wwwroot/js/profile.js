@@ -219,11 +219,11 @@ $(document).ready(function () {
             }
         });
     }
-
+ 
     $("#inputMunicipalityFilter").on('input', function () {
         var input = $("#inputMunicipalityFilter").val()
 
-        if (input.length >= 1)
+        if (input.length > 2)
             GetMunicipalities(input)
         else
             $('#listMunicipalities').empty()
