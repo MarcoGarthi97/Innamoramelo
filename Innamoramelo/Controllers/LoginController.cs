@@ -1,112 +1,14 @@
 ﻿using Innamoramelo.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.IO;
 
 namespace Innamoramelo.Controllers
 {
-    public class LoginController : Controller
+    public class LoginController : AuthenticationController
     {
-        private MyBadRequest badRequest = new MyBadRequest();
-        private PrivateController _privateController;
-        
-        private string Token;
-        private string TokenAdmin;
-
-        private HttpContext LoadContext()
-        {
-            return HttpContext;
-        }
-
-        private IConfiguration Config;
-        public LoginController(IConfiguration _config)
+        public LoginController(IConfiguration _config) : base(_config)
         {
             Config = _config;
-        }
-
-        private void Authentication()
-        {            
-            try
-            {
-                _privateController = new PrivateController(LoadContext());
-
-                var tokenJson = _privateController.GetSession("token");
-                if (tokenJson != "")
-                {
-                    var tokenDTO = JsonConvert.DeserializeObject<TokenDTO>(tokenJson);
-
-                    var authenticationAPI = new AuthenticationAPI(Config);
-                    var isExpired = authenticationAPI.ValidationBearerAsync(tokenDTO).Result;
-
-                    if(isExpired == null || !isExpired.Value)
-                    {
-                        var credentialsJson = _privateController.GetSession("credentials");
-                        if (credentialsJson != null)
-                        {
-                            var credentials = JsonConvert.DeserializeObject<AuthenticationDTO>(credentialsJson);
-                            tokenDTO = authenticationAPI.GetBearerAsync(credentials).Result;
-
-                            string json = JsonConvert.SerializeObject(tokenDTO);
-                            _privateController.Session("token", json);                            
-                        }
-                    }
-
-                    Token = tokenDTO.Bearer;
-                }
-            }
-            catch (Exception ex)
-            {
-                
-            }
-        }
-
-        private void AuthenticationAdmin()
-        {
-            try
-            {
-                _privateController = new PrivateController(LoadContext());
-
-                var authenticationAPI = new AuthenticationAPI(Config);
-                var tokenJson = _privateController.GetSession("tokenAdmin");
-
-                if (tokenJson == "")
-                {
-                    var credentialsJson = System.IO.File.ReadAllText(Config["AdminCredentials"]);
-
-                    var credentials = JsonConvert.DeserializeObject<AuthenticationDTO>(credentialsJson);
-                    var tokenDTO = authenticationAPI.GetBearerAsync(credentials).Result;
-
-                    string json = JsonConvert.SerializeObject(tokenDTO);
-                    _privateController.Session("tokenAdmin", json);
-
-                    TokenAdmin = tokenDTO.Bearer;
-                }
-                else
-                {
-                    var tokenDTO = JsonConvert.DeserializeObject<TokenDTO>(tokenJson);
-
-                    var isExpired = authenticationAPI.ValidationBearerAsync(tokenDTO).Result;
-
-                    if (isExpired == null || !isExpired.Value)
-                    {
-                        var credentialsJson = _privateController.GetSession("credentialsAdmin");
-                        if (credentialsJson != null)
-                        {
-                            var credentials = JsonConvert.DeserializeObject<AuthenticationDTO>(credentialsJson);
-                            tokenDTO = authenticationAPI.GetBearerAsync(credentials).Result;
-
-                            string json = JsonConvert.SerializeObject(tokenDTO);
-                            _privateController.Session("tokenAdmin", json);
-
-                            TokenAdmin = tokenDTO.Bearer;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-
-            }
         }
 
         private bool SetLogin(AuthenticationDTO authenticationDTO)
@@ -144,8 +46,9 @@ namespace Innamoramelo.Controllers
             try
             {
                 var authenticationDTO = JsonConvert.DeserializeObject<AuthenticationDTO>(json);
-
-                return SetLogin(authenticationDTO);
+                var result = SetLogin(authenticationDTO);
+                
+                return Ok(result);
             }
             catch (Exception ex)
             {
