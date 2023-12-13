@@ -70,23 +70,24 @@ namespace InnamorameloAPI.Controllers
                 {
                     if (auth.CheckLevelUserByToken(authHeader))
                     {
-                        if (Validator.ValidateFields(user))
+                        var userAPI = new UserAPI();
+
+                        var loginCredential = new AuthenticationDTO(user.Email, user.Password);
+                        if (!userAPI.CheckUser(loginCredential, true))
                         {
-                            var userAPI = new UserAPI();
+                            var account = new AccountDTO(loginCredential.Email, loginCredential.Password, "User");
 
-                            var loginCredential = new AuthenticationDTO(user.Email);
-                            if (!userAPI.CheckUser(loginCredential, true))
+                            var accountAPI = new AccountAPI();
+                            var insert = accountAPI.InsertAccount(account);
+
+                            if (insert != null)
                             {
-                                var account = new AccountDTO(loginCredential.Email, loginCredential.Password, "User");
+                                var userDTO = userAPI.InsertUser(user);
 
-                                var accountAPI = new AccountAPI();
-                                var insert = accountAPI.InsertAccount(account);
+                                var secretCodeAPI = new SecretCodeAPI();
+                                var secretCodeDTO = secretCodeAPI.InsertSecretCode(userDTO.Id);
 
-                                if(insert != null)
-                                {
-                                    var result = userAPI.InsertUser(user);
-                                    return Ok(result);
-                                }
+                                return Ok(userDTO);
                             }
                         }
                     }

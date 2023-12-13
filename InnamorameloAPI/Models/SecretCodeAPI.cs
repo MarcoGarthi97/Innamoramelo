@@ -20,6 +20,30 @@ namespace InnamorameloAPI.Models
             return secretCode;
         }
 
+        internal SecretCodeDTO? GetSecretCodeByUserId(ObjectId userId)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoCollection<SecretCodeMongoDB> secretCodes = innamoramelo.GetCollection<SecretCodeMongoDB>("SecretCodes");
+
+                var filter = Builders<SecretCodeMongoDB>.Filter.Eq(x => x.UserId, userId);
+
+                var find = secretCodes.Find(filter).FirstOrDefault();
+
+                var secredCodeDTO = new SecretCodeDTO();
+                Validator.CopyProperties(find, secredCodeDTO);
+
+                return secredCodeDTO;
+            }
+            catch(Exception ex)
+            {
+
+            }
+
+            return null;
+        }
+
         internal SecretCodeDTO? GetSecretCode(string userId, bool reload = true)
         {
             //BUG: quando salvo la data di creazione su atlas mi cambia l'orario come se ci fosse un fuso orario diverso 
@@ -28,55 +52,60 @@ namespace InnamorameloAPI.Models
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
                 IMongoCollection<SecretCodeMongoDB> secretCodes = innamoramelo.GetCollection<SecretCodeMongoDB>("SecretCodes");
 
-                var filter = Builders<SecretCodeMongoDB>.Filter.Eq(x => x.IdUser, new ObjectId(userId));
+                var filter = Builders<SecretCodeMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(userId));
 
                 var find = secretCodes.Find(filter).FirstOrDefault();
+
                 if (find != null)
                 {
                     find.Created = find.Created.Value.AddHours(1); //Brutta risoluzione del bug sopra citato
+
                     if (reload && DateTime.Now > find.Created)
                     {
-                        var newSecretCode = CreateSecretCode();
-                        newSecretCode.IdUser = new ObjectId(userId);
-                        InsertSecretCode(newSecretCode);
-
                         DeleteSecretCodeById(find.Id.ToString());
 
-                        find = newSecretCode;
+                        var secretCodeDTO = InsertSecretCode(find.UserId.ToString());
+                        return secretCodeDTO;
                     }
+                    else
+                    {
+                        var secretCodeDTO = new SecretCodeDTO();
+                        Validator.CopyProperties(find, secretCodeDTO);
 
-                    var secretCode = new SecretCodeDTO();
-                    Validator.CopyProperties(find, secretCode);
-
-                    return secretCode;
+                        return secretCodeDTO;
+                    }
                 }
-                else
-                    return null;
+                
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-
-                return null;
             }
+
+            return null;
         }
 
-        internal bool InsertSecretCode(SecretCodeMongoDB secretCode)
+        internal SecretCodeDTO? InsertSecretCode(string userId)
         {
             try
             {
+                var secretCode = CreateSecretCode();
+                secretCode.UserId = new ObjectId(userId);
+
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
                 IMongoCollection<SecretCodeMongoDB> secretCodes = innamoramelo.GetCollection<SecretCodeMongoDB>("SecretCodes");
 
                 secretCodes.InsertOne(secretCode);
 
-                return true;
+                var secretCodeDTO = GetSecretCodeByUserId(secretCode.UserId);
+                return secretCodeDTO;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return false;
             }
+
+            return null;
         }
 
         internal bool DeleteSecretCodeById(string id)
@@ -100,7 +129,7 @@ namespace InnamorameloAPI.Models
         {
             try
             {
-                var filter = Builders<SecretCodeMongoDB>.Filter.Eq(x => x.IdUser, new ObjectId(userId));
+                var filter = Builders<SecretCodeMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(userId));
                 var delete = DeleteSecretCode(filter);
 
                 return true;
@@ -166,7 +195,7 @@ namespace InnamorameloAPI.Models
         public ObjectId Id { get; set; }
         [BsonIgnoreIfDefault]
         [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId IdUser { get; set; }
+        public ObjectId UserId { get; set; }
         public SecretCodeMongoDB() { }
         public SecretCodeMongoDB(string? code, DateTime? created)
         {
