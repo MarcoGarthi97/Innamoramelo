@@ -45,13 +45,14 @@ namespace Innamoramelo.Controllers
 
                 var authenticationAPI = new AuthenticationAPI(Config);
                 var tokenJson = _privateController.GetSession("TokenAdmin");
+                var tokenDTO = JsonConvert.DeserializeObject<TokenDTO>(tokenJson);
 
-                if (tokenJson == "")
+                if (tokenDTO == null || tokenDTO.Bearer == null)
                 {
                     var credentialsJson = System.IO.File.ReadAllText(Config["AdminCredentials"]);
 
                     var credentials = JsonConvert.DeserializeObject<AuthenticationDTO>(credentialsJson);
-                    var tokenDTO = authenticationAPI.GetBearerAsync(credentials).Result;
+                    tokenDTO = authenticationAPI.GetBearerAsync(credentials).Result;
 
                     string json = JsonConvert.SerializeObject(tokenDTO);
                     _privateController.Session("TokenAdmin", json);
@@ -60,7 +61,7 @@ namespace Innamoramelo.Controllers
                 }
                 else
                 {
-                    var tokenDTO = ReloadAuthentication("AdminCredentials", "TokenAdmin");
+                    tokenDTO = ReloadAuthentication("AdminCredentials", "TokenAdmin");
 
                     TokenAdmin = tokenDTO.Bearer;
                 }
