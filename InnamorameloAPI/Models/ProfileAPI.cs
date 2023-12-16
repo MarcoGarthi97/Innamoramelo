@@ -16,18 +16,20 @@ namespace InnamorameloAPI.Models
                 IMongoCollection<ProfileMongoDB> profiles = innamoramelo.GetCollection<ProfileMongoDB>("Profiles");
 
                 var find = profiles.Find(filter).FirstOrDefault();
+                if(find != null)
+                {
+                    var profile = new ProfileDTO();
+                    Validator.CopyProperties(find, profile);
 
-                var profile = new ProfileDTO();
-                Validator.CopyProperties(find, profile);
-
-                return profile;
+                    return profile;
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-
-                return null;
             }
+
+            return null;
         }
 
         internal ProfileDTO? GetProfileById(string id)

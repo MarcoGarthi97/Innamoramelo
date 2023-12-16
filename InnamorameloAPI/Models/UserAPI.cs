@@ -1,7 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 using AutoMapper;
 
 namespace InnamorameloAPI.Models
@@ -122,14 +120,17 @@ namespace InnamorameloAPI.Models
             }
         }
 
-        internal UserDTO? UpdateUser(UserUpdateViewModel user, string id)
+        internal UserDTO? UpdateUser(UserDTO userDTO)
         {
             try
             {
+                var user = new UserMongoDB();
+                Validator.CopyProperties(userDTO, user);
+
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
                 IMongoCollection<UserMongoDB> users = innamoramelo.GetCollection<UserMongoDB>("Users");
 
-                var filter = Builders<UserMongoDB>.Filter.Eq(x => x.Id, new ObjectId(id));
+                var filter = Builders<UserMongoDB>.Filter.Eq(x => x.Id, user.Id);
 
                 var updateDefinition = new List<UpdateDefinition<UserMongoDB>>();
 
@@ -145,10 +146,16 @@ namespace InnamorameloAPI.Models
                 if (user.Birthday != null)
                     updateDefinition.Add(Builders<UserMongoDB>.Update.Set("Birthday", user.Birthday));
 
+                if(user.IsActive != null)
+                    updateDefinition.Add(Builders<UserMongoDB>.Update.Set("IsActive", user.IsActive));
+
+                if (user.CreateProfile != null)
+                    updateDefinition.Add(Builders<UserMongoDB>.Update.Set("CreateProfile", user.CreateProfile));
+
                 var updateUser = Builders<UserMongoDB>.Update.Combine(updateDefinition);
                 var update = users.UpdateOne(filter, updateUser);
 
-                var userUpdated = GetUserById(id);
+                var userUpdated = GetUserById(user.Id.ToString());
                 return userUpdated;
             }
             catch (Exception ex)
@@ -179,45 +186,5 @@ namespace InnamorameloAPI.Models
                 return false;
             }
         }
-    }
-
-    public class UserMongoDB : User
-    {
-        [BsonIgnoreIfDefault]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId Id { get; set; }
-        public string Password { get; set; }
-    }
-
-    public class UserDTO : User
-    {
-        public string Id { get; set; }
-    }
-
-    public class User
-    {
-        public string? Name { get; set; }
-        public string? Email { get; set; }
-        public string? Phone { get; set; }
-        public DateTime? Birthday { get; set; }
-        public bool? IsActive { get; set; }
-        public bool? CreateProfile { get; set; }
-    }
-
-    public class UserCreateViewModel
-    {
-        public string? Name { get; set; }
-        public string? Email { get; set; }
-        public string? Password { get; set; }
-        public string? Phone { get; set; }
-        public DateTime? Birthday { get; set; }
-    }
-
-    public class UserUpdateViewModel
-    {
-        public string? Name { get; set; }
-        public string? Email { get; set; }
-        public string? Phone { get; set; }
-        public DateTime? Birthday { get; set; }
     }
 }

@@ -113,7 +113,14 @@ namespace InnamorameloAPI.Controllers
                             profileinserted = profileAPI.InsertProfile(profileDTO);
 
                             if (profileinserted != null)
+                            {
+                                userDTO.CreateProfile = true;
+
+                                var userAPI = new UserAPI();
+                                var userUpdate = userAPI.UpdateUser(userDTO);
+
                                 return Ok(profileinserted);
+                            }
                         }                        
                     }
                     else

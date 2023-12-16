@@ -113,8 +113,10 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
+                        Validator.CopyProperties(user, userDTO);
+
                         var userAPI = new UserAPI();
-                        var result = userAPI.UpdateUser(user, userDTO.Id);
+                        var result = userAPI.UpdateUser(userDTO);
 
                         if (result != null)
                             return Ok(result);

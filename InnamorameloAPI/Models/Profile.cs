@@ -8,7 +8,7 @@
         public string? Education { get; set; }
         public string? Job { get; set; }
         public string? Bio { get; set; }
-        public List<string>? Passions { get; set; }
+        public string[]? Passions { get; set; }
         public GeoDTO? Location { get; set; }
         public int? RangeKm { get; set; }
     }
