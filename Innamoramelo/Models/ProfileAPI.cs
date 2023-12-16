@@ -138,7 +138,7 @@ namespace Innamoramelo.Models
 
                 var client = new RestClient(options);
 
-                var request = new RestRequest("DeleteProfile", Method.Patch);
+                var request = new RestRequest("UpdateProfile", Method.Patch);
                 request.AddHeader("Authorization", "Bearer " + token);
                 request.AddHeader("Content-Type", "application/json");
 

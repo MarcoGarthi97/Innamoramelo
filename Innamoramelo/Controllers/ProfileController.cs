@@ -12,7 +12,27 @@ namespace Innamoramelo.Controllers
             Config = _config;
         }
 
-        public ActionResult<ProfileDTO?> InsertProfile(string json)
+        public ActionResult<ProfileDTO?> GetProfile()
+        {
+            try
+            {
+                Authentication();
+
+                var profileAPI = new ProfileAPI(Config);
+                var profileDTO = profileAPI.GetProfile(Token).Result;
+
+                if (profileDTO != null)
+                    return profileDTO;
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
+
+        public ActionResult<ProfileDTO?> PutProfile(string json)
         {
             try
             {
@@ -21,17 +41,15 @@ namespace Innamoramelo.Controllers
                 Authentication();
 
                 var profileAPI = new ProfileAPI(Config);
-                var profileDTO = profileAPI.InsertProfile(profileModel, Token).Result;
+                var profileDTO = profileAPI.GetProfile(Token).Result;
 
-                if(profileDTO != null)
-                {
-                    //string jsonProfileDTO = JsonConvert.SerializeObject(profileDTO);
+                if (profileDTO == null)
+                    profileDTO = profileAPI.InsertProfile(profileModel, Token).Result;
+                else
+                    profileDTO = profileAPI.UpdateProfile(profileModel, Token).Result;
 
-                    //_privateController = new PrivateController(LoadContext());
-                    //_privateController.Session("Profile", json);
-
+                if (profileDTO != null)
                     return profileDTO;
-                }
             }
             catch (Exception ex)
             {

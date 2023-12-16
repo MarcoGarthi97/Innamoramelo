@@ -109,6 +109,9 @@ namespace InnamorameloAPI.Models
                 if (profile.LookingFor != null && profile.LookingFor.Length > 0)
                     updateDefinition.Add(Builders<ProfileMongoDB>.Update.Set("LookingFor", profile.LookingFor));
 
+                if (profile.Age != null)
+                    updateDefinition.Add(Builders<ProfileMongoDB>.Update.Set("Age", profile.Age));
+
                 if (!string.IsNullOrEmpty(profile.Education))
                     updateDefinition.Add(Builders<ProfileMongoDB>.Update.Set("Education", profile.Education));
 
