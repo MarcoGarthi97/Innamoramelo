@@ -28,6 +28,8 @@ namespace Innamoramelo.Models
                 RestResponse response = await client.ExecuteAsync(request);
 
                 var citiesDTO = JsonConvert.DeserializeObject<List<CityDTO>?>(response.Content);
+                citiesDTO = citiesDTO.OrderBy(x => x.Name).ToList();
+
                 return citiesDTO;
             }
             catch (Exception ex)
