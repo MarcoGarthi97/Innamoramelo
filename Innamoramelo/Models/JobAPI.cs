@@ -28,6 +28,8 @@ namespace Innamoramelo.Models
                 RestResponse response = await client.ExecuteAsync(request);
 
                 var jobsDTO = JsonConvert.DeserializeObject<List<JobDTO>?>(response.Content);
+                jobsDTO = jobsDTO.OrderBy(x => x.Name).ToList();
+
                 return jobsDTO;
             }
             catch (Exception ex)
