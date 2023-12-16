@@ -55,22 +55,22 @@ $(document).ready(function () {
     <h4 style="color: white;">Select up to 5 of your passions</h4>
     <div class="row">
         <div class="col-md-4">
-            <div class="interest" data-id="Travel">Travel</div>
-            <div class="interest" data-id="Reading">Reading</div>
-            <div class="interest" data-id="Music">Music</div>
-            <div class="interest" data-id="Sports">Sports</div>
+            <div class="interest" data-id="Travel" id="Travel">Travel</div>
+            <div class="interest" data-id="Reading" id="Reading">Reading</div>
+            <div class="interest" data-id="Music" id="Music">Music</div>
+            <div class="interest" data-id="Sports" id="Sports">Sports</div>
         </div>
         <div class="col-md-4">
-            <div class="interest" data-id="Food">Food</div>
-            <div class="interest" data-id="Art">Art</div>
-            <div class="interest" data-id="Technology">Technology</div>
-            <div class="interest" data-id="Movies">Movies</div>
+            <div class="interest" data-id="Food" id="Food">Food</div>
+            <div class="interest" data-id="Art" id="Art">Art</div>
+            <div class="interest" data-id="Technology" id="Technology">Technology</div>
+            <div class="interest" data-id="Movies" id="Movies">Movies</div>
         </div>
         <div class="col-md-4">
-            <div class="interest" data-id="Photography">Photography</div>
-            <div class="interest" data-id="Fitness">Fitness</div>
-            <div class="interest" data-id="Gaming">Gaming</div>
-            <div class="interest" data-id="Fashion">Fashion</div>
+            <div class="interest" data-id="Photography" id="Photography">Photography</div>
+            <div class="interest" data-id="Fitness" id="Fitness">Fitness</div>
+            <div class="interest" data-id="Gaming" id="Gaming">Gaming</div>
+            <div class="interest" data-id="Fashion" id="Fashion">Fashion</div>
         </div>
     </div>
 </div>`
@@ -140,7 +140,7 @@ $(document).ready(function () {
 </div>`
 
     var obj = {}
-    var page = 4
+    var page = 1
 
     var listCity = []
 
@@ -165,10 +165,10 @@ $(document).ready(function () {
 
             obj.Gender = $('#selectGender').val()
             obj.SexualOrientation = $('#selectSexualOrientation').val()
-            obj.LookingFor = $('#selectLookingFor').val()            
+            obj.LookingFor = $('#selectLookingFor').val()
         }
-        else if(page == 2){
-            if($('#inputEducation').val() == "" || $('#inputJobFilter').val() == ""){
+        else if (page == 2) {
+            if ($('#inputEducation').val() == "" || $('#inputJobFilter').val() == "") {
                 alert("Values all fields")
                 return;
             }
@@ -176,32 +176,74 @@ $(document).ready(function () {
             obj.Education = $('#inputEducation').val()
             obj.Job = $('#inputJobFilter').val()
         }
-        else if(page == 3){
+        else if (page == 3) {
             var interests = GetInterests()
-            
-            if(interests.length < 3){
+
+            if (interests.length < 3) {
                 alert("Select at least 3 interests")
                 return
             }
- 
+
             obj.Passion = interests
         }
-        else if(page == 4){
+        else if (page == 4) {
             if ($('#inputMunicipalityFilter').val() == "" || $('#range').val() == "" || $('#inputBio').val() == "") {
                 alert("Values all fields")
                 return;
             }
+            else if (listCity.find(x => x.name == $('#inputMunicipalityFilter').val()).length < 0) {
+                alert("Choose your city")
+                return;
+            }
 
-            //obj.
+            obj.Location.Id = listCity[0].id
+            obj.Location.Name = listCity[0].name
+            obj.RangeKm = $('#range').val()
+            obj.Bio = $('#inputBio').val()
         }
 
-        if(page < 5){
+        if (page < 5) {
             $('#card-body').empty()
 
             page++
             LoadElements()
 
             console.log(obj)
+        }
+    })
+
+    $('#btnBack').on("click", function () {
+        if (page > 0) {
+            $('#card-body').empty()
+
+            page--
+            LoadElements()
+
+            console.log(obj)
+        }
+
+        if (page == 1) {
+            $('#selectGender').val(obj.Gender)
+            $('#selectSexualOrientation').val(obj.SexualOrientation)
+            $('#selectLookingFor').val(obj.LookingFor)
+        }
+        else if (page == 2) {
+            $('#inputEducation').val(obj.Education)
+            $('#inputJobFilter').val(obj.Job)
+
+            GetJobs(obj.Job)
+        }
+        else if (page == 3) {
+            obj.Passion.forEach(function (item) {
+                $('#' + item).addClass("bg-primary")
+            })
+        }
+        else if (page == 4) {
+            $('#inputMunicipalityFilter').val(obj.Location.Name)
+            $('#range').val(obj.RangeKm)
+            $('#inputBio').val(obj.Bio)
+
+            GetMunicipalities()
         }
     })
 
@@ -218,6 +260,7 @@ $(document).ready(function () {
             type: "POST",
             data: { filter: filter },
             success: function (result) {
+                console.log(result)
                 $('#listJobs').empty()
 
                 var itemsHTML = ""
@@ -252,7 +295,7 @@ $(document).ready(function () {
         //console.log($('#selectLookingFor').val())
     });
 
-    $(".interest").click(function () {
+    $(document).on("click", ".interest", function () {
         if (GetInterests().length < 5) {
             $(this).toggleClass("bg-primary text-white");
         }
@@ -291,11 +334,23 @@ $(document).ready(function () {
         });
     }
 
-    $("#inputMunicipalityFilter").on('input', function () {
+    var timerID = null;
+    function stopTimer() {
+        if (timerID) {
+            clearTimeout(timerID);
+            timerID = null;
+        }
+    }
+
+    $(document).on('input', "#inputMunicipalityFilter", function () { 
         var input = $("#inputMunicipalityFilter").val()
 
-        if (input.length > 2)
-            var timer1 = setTimeout(GetMunicipalities(input), 1000); 
+        //const timer1 = setTimeout(GetMunicipalities(input), 2000); 
+
+        if (input.length > 2){
+            stopTimer();
+            timerID = setTimeout(GetMunicipalities, 2000);
+        }
         else
             $('#listMunicipalities').empty()
     })
@@ -306,16 +361,17 @@ $(document).ready(function () {
 
         $("#inputMunicipalityFilter").val(val)
 
-        GetMunicipalities(val)
+        GetMunicipalities()
     })
 
-    function GetMunicipalities(filter) {
+    function GetMunicipalities() { 
+        var filter = $("#inputMunicipalityFilter").val()
+
         $.ajax({
             url: urlGetMunicipalities,
             type: "POST",
             data: { filter: filter },
             success: function (result) {
-                console.log(result) 
                 $('#listMunicipalities').empty()
 
                 var itemsHTML = ""
