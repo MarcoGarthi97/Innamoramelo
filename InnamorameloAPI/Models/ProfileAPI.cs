@@ -104,7 +104,7 @@ namespace InnamorameloAPI.Models
                 if (!string.IsNullOrEmpty(profile.SexualOrientation))
                     updateDefinition.Add(Builders<ProfileMongoDB>.Update.Set("SexualOrientation", profile.SexualOrientation));
 
-                if (!string.IsNullOrEmpty(profile.LookingFor))
+                if (profile.LookingFor != null && profile.LookingFor.Length > 0)
                     updateDefinition.Add(Builders<ProfileMongoDB>.Update.Set("LookingFor", profile.LookingFor));
 
                 if (!string.IsNullOrEmpty(profile.School))

@@ -4,7 +4,7 @@
     {
         public string? Gender { get; set; }
         public string? SexualOrientation { get; set; }
-        public string? LookingFor { get; set; }
+        public string[]? LookingFor { get; set; }
         public string? School { get; set; }
         public string? Work { get; set; }
         public string? Bio { get; set; }
