@@ -107,11 +107,11 @@ namespace InnamorameloAPI.Models
                 if (profile.LookingFor != null && profile.LookingFor.Length > 0)
                     updateDefinition.Add(Builders<ProfileMongoDB>.Update.Set("LookingFor", profile.LookingFor));
 
-                if (!string.IsNullOrEmpty(profile.School))
-                    updateDefinition.Add(Builders<ProfileMongoDB>.Update.Set("School", profile.School));
+                if (!string.IsNullOrEmpty(profile.Education))
+                    updateDefinition.Add(Builders<ProfileMongoDB>.Update.Set("Education", profile.Education));
 
-                if (!string.IsNullOrEmpty(profile.Work))
-                    updateDefinition.Add(Builders<ProfileMongoDB>.Update.Set("Work", profile.Work));
+                if (!string.IsNullOrEmpty(profile.Job))
+                    updateDefinition.Add(Builders<ProfileMongoDB>.Update.Set("Job", profile.Job));
 
                 if (!string.IsNullOrEmpty(profile.Bio))
                     updateDefinition.Add(Builders<ProfileMongoDB>.Update.Set("Bio", profile.Bio));
