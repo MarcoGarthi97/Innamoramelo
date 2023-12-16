@@ -35,5 +35,10 @@ namespace Innamoramelo.Controllers
         {
             httpContext.Session.SetString(key, json);
         }
+
+        internal void RemoveSession(string key)
+        {
+            httpContext.Session.Remove(key);
+        }
     }
 }

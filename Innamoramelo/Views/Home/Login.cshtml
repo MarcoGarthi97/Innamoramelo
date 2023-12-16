@@ -47,6 +47,7 @@
             type: "POST",
             data: { json: json },
             success: function (result) {
+                console.log(result)
                 if (result)
                     window.location.href = '@Url.Action("HomePage", "Home")'
             },

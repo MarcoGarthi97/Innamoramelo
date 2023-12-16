@@ -1,11 +1,17 @@
 ﻿using Innamoramelo.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Diagnostics;
 
 namespace Innamoramelo.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : AuthenticationController
     {
+        public HomeController(IConfiguration _config) : base(_config)
+        {
+            Config = _config;
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -34,14 +40,33 @@ namespace Innamoramelo.Controllers
 
         public IActionResult Profile()
         {
-            return View(); //Da cancellare
-            //return View(authentication.GetSite("Profile", HttpContext));
+            return View(); 
         }
 
         public IActionResult HomePage()
         {
-            return View();
-            //return View(authentication.GetSite("HomePage", HttpContext));
+            try
+            {
+                _privateController = new PrivateController(LoadContext());
+                string json = _privateController.GetSession("User");
+
+                if (json != "")
+                {
+                    var userDTO = JsonConvert.DeserializeObject<UserDTO>(json);
+
+                    if (userDTO.CreateProfile == null || !userDTO.CreateProfile.Value)
+                        return View("Profile");
+                    else if (userDTO.CreateProfile.Value)
+                        return View("HomePage");
+
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return View("Login");
         }
     }
 }

@@ -54,6 +54,8 @@ namespace Innamoramelo.Controllers
                     var credentials = JsonConvert.DeserializeObject<AuthenticationDTO>(credentialsJson);
                     tokenDTO = authenticationAPI.GetBearerAsync(credentials).Result;
 
+                    _privateController.Session("AdminCredentials", credentialsJson);
+
                     string json = JsonConvert.SerializeObject(tokenDTO);
                     _privateController.Session("TokenAdmin", json);
 

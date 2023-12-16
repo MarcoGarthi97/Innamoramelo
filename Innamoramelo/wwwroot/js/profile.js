@@ -184,25 +184,24 @@ $(document).ready(function () {
                 return
             }
 
-            obj.Passion = interests
+            obj.Passions = interests
         }
         else if (page == 4) {
             if ($('#inputMunicipalityFilter').val() == "" || $('#range').val() == "" || $('#inputBio').val() == "") {
                 alert("Values all fields")
                 return;
             }
-            else if (listCity.find(x => x.name == $('#inputMunicipalityFilter').val()).length < 0) {
-                alert("Choose your city")
-                return;
-            }
+            console.log(listCity)
+            console.log(listCity.find(x => x.name == $('#inputMunicipalityFilter').val())) 
 
-            obj.Location.Id = listCity[0].id
+            obj.Location = {} 
+            obj.Location.Id = listCity[0].id  
             obj.Location.Name = listCity[0].name
             obj.RangeKm = $('#range').val()
             obj.Bio = $('#inputBio').val()
         }
 
-        if (page < 5) {
+        if (page < 4) {
             $('#card-body').empty()
 
             page++
@@ -210,7 +209,25 @@ $(document).ready(function () {
 
             console.log(obj)
         }
+        else{
+            InsertProfile()
+        }
     })
+
+    function InsertProfile(){
+        var json = JSON.stringify(obj)
+        $.ajax({
+            url: urlInsertProfile,
+            type: "POST",
+            data: { json: json }, 
+            success: function (result) {
+                console.log(result)                
+            },
+            error: function (error) {
+                console.log(error)
+            }
+        })
+    }
 
     $('#btnBack').on("click", function () {
         if (page > 0) {
@@ -234,7 +251,7 @@ $(document).ready(function () {
             GetJobs(obj.Job)
         }
         else if (page == 3) {
-            obj.Passion.forEach(function (item) {
+            obj.Passions.forEach(function (item) {
                 $('#' + item).addClass("bg-primary")
             })
         }
@@ -372,6 +389,7 @@ $(document).ready(function () {
             type: "POST",
             data: { filter: filter },
             success: function (result) {
+                listCity = result
                 $('#listMunicipalities').empty()
 
                 var itemsHTML = ""
@@ -388,7 +406,7 @@ $(document).ready(function () {
         })
     }
 
-    $('#range').on('input', function () {
+    $(document).on('input', '#range', function () {
         $('#labelRange').html('Range: ' + $('#range').val() + "km")
     })
-})
+}) 

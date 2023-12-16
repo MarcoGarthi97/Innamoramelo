@@ -20,13 +20,19 @@ namespace Innamoramelo.Controllers
 
                 if (tokenDTO != null)
                 {
+                    var userAPI = new UserAPI(Config);
+                    var userDTO = userAPI.GetUser(tokenDTO.Bearer).Result;
+
                     _privateController = new PrivateController(LoadContext());
 
                     string json = JsonConvert.SerializeObject(tokenDTO);
-                    _privateController.Session("token", json);
+                    _privateController.Session("Token", json);
 
                     json = JsonConvert.SerializeObject(authenticationDTO);
-                    _privateController.Session("credentials", json);
+                    _privateController.Session("Credentials", json);
+
+                    json = JsonConvert.SerializeObject(userDTO);
+                    _privateController.Session("User", json);
 
                     Token = tokenDTO.Bearer;
 
