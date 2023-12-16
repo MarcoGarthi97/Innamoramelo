@@ -9,7 +9,7 @@
         public string? Work { get; set; }
         public string? Bio { get; set; }
         public List<string>? Passions { get; set; }
-        public LocationDTO? Location { get; set; }
+        public GeoDTO? Location { get; set; }
         public int? RangeKm { get; set; }
     }
 }

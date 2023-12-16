@@ -10,6 +10,7 @@ namespace InnamorameloAPI.Controllers
         static private AuthenticationAPI auth = new AuthenticationAPI();
         static private MyBadRequest badRequest = new MyBadRequest();
 
+        [Obsolete("Method1 is deprecated, please use GetPlace instead.")]
         [HttpGet("GetCity", Name = "GetCity")]
         public ActionResult<List<CityDTO>> GetCity(string filter)
         {

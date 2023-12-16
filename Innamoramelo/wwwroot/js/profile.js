@@ -114,39 +114,101 @@ $(document).ready(function () {
     </div>
 </div>`
 
+    const cityHTML = `<div class="row">
+<div class="col">
+    <div class="container">
+        <div style='margin-bottom: 2%; color:"white"'>Municipality</div>
+        <input class="form-control" id="inputMunicipalityFilter" type="text" placeholder="Search..">
+        <ul class="list-group" id="listMunicipalities">
+        </ul>
+    </div>
+</div>
+<div class="col">
+    <div class="mb-3">
+        <label for="range" class="form-label" id="labelRange">Range: 5km</label>
+        <input type="range" class="form-range" id="range" min="5" max="100" value="5">
+    </div>
+</div>
+</div>
+<div class="row">
+<div class="col">
+    <div class="mb-3">
+        <label for="inputBio" class="form-label">Biography</label>
+        <textarea class="form-control" aria-label="With textarea" id="inputBio"></textarea>
+    </div>
+</div>
+</div>`
+
     var obj = {}
+    var page = 4
+
+    var listCity = []
 
     LoadElements()
     function LoadElements() {
-        //$('#card-body').append(sexualHTML) //funziona
-        //$('#card-body').append(jobHTML)
-        //$('#card-body').append(interestHTML)
-        //$('#card-body').append(photosHTML)
-        /*sotto a foto ci va questo codice        
-    handleFileInput('fileInput1', 'image1');
-    handleFileInput('fileInput2', 'image2');
-    handleFileInput('fileInput3', 'image3');
-        */
+        if (page == 1)
+            $('#card-body').append(sexualHTML)
+        else if (page == 2)
+            $('#card-body').append(jobHTML)
+        else if (page == 3)
+            $('#card-body').append(interestHTML)
+        else if (page == 4)
+            $('#card-body').append(cityHTML)
     }
 
-    $('#sexualContinue').on("click", function () {
-        if ($('#selectGender').val() == "" || $('#selectSexualOrientation').val() == "" || $('#selectLookingFor').val() == "") {
-            alert("Values all fields")
-            return;
+    $('#btnContinue').on("click", function () {
+        if (page == 1) {
+            if ($('#selectGender').val() == "" || $('#selectSexualOrientation').val() == "" || $('#selectLookingFor').val() == "") {
+                alert("Values all fields")
+                return;
+            }
+
+            obj.Gender = $('#selectGender').val()
+            obj.SexualOrientation = $('#selectSexualOrientation').val()
+            obj.LookingFor = $('#selectLookingFor').val()            
+        }
+        else if(page == 2){
+            if($('#inputEducation').val() == "" || $('#inputJobFilter').val() == ""){
+                alert("Values all fields")
+                return;
+            }
+
+            obj.Education = $('#inputEducation').val()
+            obj.Job = $('#inputJobFilter').val()
+        }
+        else if(page == 3){
+            var interests = GetInterests()
+            
+            if(interests.length < 3){
+                alert("Select at least 3 interests")
+                return
+            }
+ 
+            obj.Passion = interests
+        }
+        else if(page == 4){
+            if ($('#inputMunicipalityFilter').val() == "" || $('#range').val() == "" || $('#inputBio').val() == "") {
+                alert("Values all fields")
+                return;
+            }
+
+            //obj.
         }
 
-        obj.Gender = $('#selectGender').val()
-        obj.SexualOrientation = $('#selectSexualOrientation').val()
-        obj.LookingFor = $('#selectLookingFor').val()
+        if(page < 5){
+            $('#card-body').empty()
 
-        $('#card-body').empty()
+            page++
+            LoadElements()
 
+            console.log(obj)
+        }
     })
 
-    $("#inputJobFilter").on('input', function () {
+    $(document).on('input', "#inputJobFilter", function () {
         var input = $("#inputJobFilter").val()
 
-        if (input.length > 3)
+        if (input.length > 2)
             GetJobs(input)
     })
 
@@ -161,7 +223,7 @@ $(document).ready(function () {
                 var itemsHTML = ""
 
                 result.forEach(function (item, i) {
-                    itemsHTML += '<li class="list-group-item" id="item_' + i + '">' + item.name + '</li>'
+                    itemsHTML += '<li class="list-group-item job-item" id="item_' + i + '">' + item.name + '</li>'
                 })
 
                 $('#listJobs').append(itemsHTML)
@@ -171,6 +233,15 @@ $(document).ready(function () {
             }
         })
     }
+
+    $(document).on('click', '.job-item', function () {
+        var item = $(this)
+        var val = $('#' + item[0].id).html()
+
+        $("#inputJobFilter").val(val)
+
+        GetJobs(val)
+    })
 
     $(document).on("click", ".list-group-item", function (e) {
         $('.list-group-item').removeClass('active')
@@ -219,14 +290,23 @@ $(document).ready(function () {
             }
         });
     }
- 
+
     $("#inputMunicipalityFilter").on('input', function () {
         var input = $("#inputMunicipalityFilter").val()
 
         if (input.length > 2)
-            GetMunicipalities(input)
+            var timer1 = setTimeout(GetMunicipalities(input), 1000); 
         else
             $('#listMunicipalities').empty()
+    })
+
+    $(document).on('click', '.city-item', function () {
+        var item = $(this)
+        var val = $('#' + item[0].id).html()
+
+        $("#inputMunicipalityFilter").val(val)
+
+        GetMunicipalities(val)
     })
 
     function GetMunicipalities(filter) {
@@ -235,12 +315,13 @@ $(document).ready(function () {
             type: "POST",
             data: { filter: filter },
             success: function (result) {
+                console.log(result) 
                 $('#listMunicipalities').empty()
 
                 var itemsHTML = ""
 
-                result.forEach(function (item, i) {
-                    itemsHTML += '<li class="list-group-item" id="item_' + i + '">' + item.name + '</li>'
+                result.forEach(function (item) {
+                    itemsHTML += '<li class="list-group-item city-item" id="item_' + item.id + '">' + item.name + '</li>'
                 })
 
                 $('#listMunicipalities').append(itemsHTML)
@@ -251,7 +332,7 @@ $(document).ready(function () {
         })
     }
 
-    $('#range').on('input', function(){
-        $('#labelRange').html('Range: ' + $('#range').val() + "km") 
+    $('#range').on('input', function () {
+        $('#labelRange').html('Range: ' + $('#range').val() + "km")
     })
 })

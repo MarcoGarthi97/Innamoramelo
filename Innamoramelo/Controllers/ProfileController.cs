@@ -12,7 +12,7 @@ namespace Innamoramelo.Controllers
             Config = _config;
         }
 
-        public ActionResult<List<JobDTO>?> GetJobs(string filter)
+        public ActionResult<List<JobDTO>?> GetJob(string filter)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace Innamoramelo.Controllers
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
-        public ActionResult<List<CityDTO>?> GetCity(string filter)
+        public ActionResult<List<GeoDTO>?> GetCity(string filter)
         {
             try
             {

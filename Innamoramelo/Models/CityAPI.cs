@@ -11,7 +11,7 @@ namespace Innamoramelo.Models
             UrlAPI = config["urlAPI"] + "/City/";
         }
 
-        internal async Task<List<CityDTO>?> GetCity(string filter, string token)
+        internal async Task<List<GeoDTO>?> GetCity(string filter, string token)
         {
             try
             {
@@ -22,12 +22,12 @@ namespace Innamoramelo.Models
 
                 var client = new RestClient(options);
 
-                var request = new RestRequest("GetCity?filter=" + filter, Method.Get);
+                var request = new RestRequest("GetPlace?filter=" + filter, Method.Get);
                 request.AddHeader("Authorization", "Bearer " + token);
 
                 RestResponse response = await client.ExecuteAsync(request);
 
-                var citiesDTO = JsonConvert.DeserializeObject<List<CityDTO>?>(response.Content);
+                var citiesDTO = JsonConvert.DeserializeObject<List<GeoDTO>?>(response.Content);
                 citiesDTO = citiesDTO.OrderBy(x => x.Name).ToList();
 
                 return citiesDTO;
