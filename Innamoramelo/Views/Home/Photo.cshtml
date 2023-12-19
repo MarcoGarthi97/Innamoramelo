@@ -1,0 +1,86 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<style>
+    .card {
+        height: 300px;
+        /* Imposta un'altezza fissa per la card */
+    }
+
+    .card-img-top {
+        width: 100%;
+        height: 240px;
+        object-fit: cover;
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card bg-dark" id="card">
+            <div class="card-header">
+                <h2>Photo</h2>
+            </div>
+            <div class="row" id="card-body">
+                <div class="container">
+                    <h4 style="color: white;">Upload your photos</h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <img src="https://via.placeholder.com/150" id="image1" class="card-img-top"
+                                    alt="Immagine 1">
+                                <div class="card-body">
+                                    <label for="fileInput1" class="btn btn-primary">
+                                        Carica Foto
+                                        <input type="file" id="fileInput1" class="form-control-file d-none"
+                                            accept="image/*">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <img src="https://via.placeholder.com/150" id="image2" class="card-img-top"
+                                    alt="Immagine 2">
+                                <div class="card-body">
+                                    <label for="fileInput2" class="btn btn-primary">
+                                        Carica Foto
+                                        <input type="file" id="fileInput2" class="form-control-file d-none">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <img src="https://via.placeholder.com/150" id="image3" class="card-img-top"
+                                    alt="Immagine 3">
+                                <div class="card-body">
+                                    <label for="fileInput3" class="btn btn-primary">
+                                        Carica Foto
+                                        <input type="file" id="fileInput3" class="form-control-file d-none">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <button type="button" id="btnBack" class="btn btn-primary">←</button>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <button type="button" id="btnSave" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var urlGetPhotos = '@Url.Action("GetPhotos", "Photo")'
+    var urlInsertPhoto = '@Url.Action("InsertPhoto", "Photo")'
+</script>
+<script src="~/js/photo.js"></script>

@@ -40,7 +40,18 @@ namespace Innamoramelo.Controllers
 
         public IActionResult Profile()
         {
-            return View(); 
+            if(Authentication())
+                return View();
+            else
+                return View("Login");
+        }
+
+        public IActionResult Photo()
+        {
+            if (Authentication())
+                return View();
+            else
+                return View("Login");
         }
 
         public IActionResult HomePage()

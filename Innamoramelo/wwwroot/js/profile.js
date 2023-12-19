@@ -90,45 +90,6 @@ $(document).ready(function () {
     </div>
 </div>`
 
-    const photosHTML = `<div class="container">
-    <h4 style="color: white;">Upload your photos</h4>
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/150" id="image1" class="card-img-top" alt="Immagine 1">
-                <div class="card-body">
-                    <label for="fileInput1" class="btn btn-primary">
-                        Carica Foto
-                        <input type="file" id="fileInput1" class="form-control-file d-none" accept="image/*">
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/150" id="image2" class="card-img-top" alt="Immagine 2">
-                <div class="card-body">
-                    <label for="fileInput2" class="btn btn-primary">
-                        Carica Foto
-                        <input type="file" id="fileInput2" class="form-control-file d-none">
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/150" id="image3" class="card-img-top" alt="Immagine 3">
-                <div class="card-body">
-                    <label for="fileInput3" class="btn btn-primary">
-                        Carica Foto
-                        <input type="file" id="fileInput3" class="form-control-file d-none">
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>`
-
     const cityHTML = `<div class="row">
 <div class="col">
     <div class="container">
@@ -387,26 +348,6 @@ $(document).ready(function () {
 
         return selectedInterests
     };
-
-    function handleFileInput(inputId, imageId) {
-        const input = document.getElementById(inputId);
-        const image = document.getElementById(imageId);
-
-        input.addEventListener('change', function () {
-            const file = input.files[0];
-            console.log(file)
-
-            if (file) {
-                const reader = new FileReader();
-
-                reader.onload = function (e) {
-                    image.src = e.target.result;
-                };
-
-                reader.readAsDataURL(file);
-            }
-        });
-    }
 
     var timerID = null;
     function stopTimer() {
