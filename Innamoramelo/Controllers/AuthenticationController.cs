@@ -23,18 +23,25 @@ namespace Innamoramelo.Controllers
             Config = _config;
         }
 
-        internal void Authentication()
+        internal bool Authentication()
         {
             try
             {
                 var tokenDTO = ReloadAuthentication("Credentials", "Token");
+                if (tokenDTO != null)
+                {
+                    Token = tokenDTO.Bearer;
 
-                Token = tokenDTO.Bearer;
+                    return true;
+                }
+
             }
             catch (Exception ex)
             {
 
             }
+
+            return false;
         }
 
         internal void AuthenticationAdmin()
@@ -85,19 +92,22 @@ namespace Innamoramelo.Controllers
 
                 var tokenDTO = JsonConvert.DeserializeObject<TokenDTO>(tokenJson);
 
-                var isExpired = authenticationAPI.ValidationBearerAsync(tokenDTO).Result;
-
-                if (isExpired == null || !isExpired.Value)
+                if(tokenDTO != null)
                 {
-                    var credentialsJson = _privateController.GetSession(credentialsName);
-                    if (credentialsJson != null)
+                    var isExpired = authenticationAPI.ValidationBearerAsync(tokenDTO).Result;
+
+                    if (isExpired == null || !isExpired.Value)
                     {
-                        var credentials = JsonConvert.DeserializeObject<AuthenticationDTO>(credentialsJson);
-                        tokenDTO = authenticationAPI.GetBearerAsync(credentials).Result;
+                        var credentialsJson = _privateController.GetSession(credentialsName);
+                        if (credentialsJson != null)
+                        {
+                            var credentials = JsonConvert.DeserializeObject<AuthenticationDTO>(credentialsJson);
+                            tokenDTO = authenticationAPI.GetBearerAsync(credentials).Result;
 
-                        string json = JsonConvert.SerializeObject(tokenDTO);
-                        _privateController.Session(tokenName, json);
+                            string json = JsonConvert.SerializeObject(tokenDTO);
+                            _privateController.Session(tokenName, json);
 
+                        }
                     }
                 }
 
