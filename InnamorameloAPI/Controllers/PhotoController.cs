@@ -172,5 +172,32 @@ namespace InnamorameloAPI.Controllers
 
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
+
+        [HttpDelete("DeletePhotosByUserId", Name = "DeletePhotosByUserId")]
+        public ActionResult<bool> DeletePhotosByUserId()
+        {
+            try
+            {
+                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+                {
+                    var userDTO = auth.GetUserByToken(authHeader);
+                    if (userDTO != null)
+                    {
+                        var photoAPI = new PhotoAPI();
+
+                        var delete = photoAPI.DeletePhotosByIdUser(userDTO.Id);
+                        return Ok(delete);
+                    }
+                    else
+                        return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
+                }
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
     }
 }

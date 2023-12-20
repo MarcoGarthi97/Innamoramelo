@@ -223,7 +223,7 @@ namespace InnamorameloAPI.Models
             return false;
         }
 
-        internal bool DeletePhotoByIdUser(string userId)
+        internal bool DeletePhotosByIdUser(string userId)
         {
             try
             {
