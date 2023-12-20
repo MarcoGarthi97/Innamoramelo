@@ -38,6 +38,10 @@ namespace Innamoramelo.Controllers
                 var photos = new List<PhotoDTO>();
                 var photoAPI = new PhotoAPI(Config);
 
+                Authentication();
+
+                var delete = photoAPI.DeletePhotos(Token).Result;
+
                 foreach (var file in files)
                 {
                     using (var ms = new MemoryStream())
@@ -47,7 +51,7 @@ namespace Innamoramelo.Controllers
                         file.CopyTo(ms);
                         var fileBytes = ms.ToArray();
 
-                        var photoDTO = photoAPI.InsertPhoto(fileBytes, Token).Result;
+                        var photoDTO = photoAPI.InsertPhoto(fileBytes, file.FileName, Token).Result;
 
                         photos.Add(photoDTO);
                     }

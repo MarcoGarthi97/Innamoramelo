@@ -11,7 +11,8 @@ $(document).ready(function () {
 
         input.addEventListener('change', function () {
             const file = input.files[0];
-            photoObj.push(file)
+
+            photoObj[(imageId.substring(5) - 1)] = file 
 
             if (file) {
                 const reader = new FileReader();
@@ -24,23 +25,33 @@ $(document).ready(function () {
 
                 var data = new FormData();
                 data.append('file', file);
-
-                console.log(data)
-
             }
         });
     }
 
     GetPhotos()
-    function GetPhotos(){
+    function GetPhotos() {
         $.ajax({
             url: urlGetPhotos,
             type: "GET",
             success: function (result) {
-                console.log(result)
-                result.forEach(function(item, i){
-                    $('#image' + (i + 1)).attr('src', `data:image/png;base64,${item.bytes}`); 
-                })                  
+                result.forEach(function (item, i) {
+                    $('#image' + (i + 1)).attr('src', `data:image/png;base64,${item.bytes}`);
+
+                    //const fileObject = new File([item.bytes], item.name); 
+                    //photoObj.push(fileObject); 
+                    
+                    const bytes = atob(item.bytes);
+                    const byteNumbers = new Array(bytes.length);
+                    for (let i = 0; i < bytes.length; i++) {
+                        byteNumbers[i] = bytes.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const blob = new Blob([byteArray], { type: item.extension });
+                    var file = new File([blob], item.name, { type: item.extension });
+
+                    photoObj.push(file); 
+                })                
             },
             error: function (error) {
                 console.log(error)
@@ -52,9 +63,9 @@ $(document).ready(function () {
         if (photoObj.length > 0) {
             var data = new FormData();
 
-            photoObj.forEach(function(file){
+            photoObj.forEach(function (file) {
                 data.append("files", file);
-            })             
+            })
 
             $.ajax({
                 url: urlInsertPhoto,
@@ -63,7 +74,7 @@ $(document).ready(function () {
                 processData: false,
                 contentType: false,
                 success: function (result) {
-                    console.log(result)
+                    alert("Saved") 
                 },
                 error: function (error) {
                     console.log(error)
