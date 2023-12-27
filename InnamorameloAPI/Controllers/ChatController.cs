@@ -50,6 +50,48 @@ namespace InnamorameloAPI.Controllers
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
+        [HttpPost("VisualizeMessages", Name = "VisualizeMessages")]
+        public ActionResult<List<ChatDTO>> VisualizeMessages(string receiverId)
+        {
+            try
+            {
+                if (HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+                {
+                    var userDTO = auth.GetUserByToken(authHeader);
+                    if (userDTO != null)
+                    {
+                        var chatsDTO = new List<ChatDTO>();
+
+                        var chatAPI = new ChatAPI();
+                        var notVisualizedChatsDTO = chatAPI.GetMessagesNotVisualized(userDTO.Id, receiverId);
+
+                        foreach(var chat in notVisualizedChatsDTO)
+                        {
+                            var chatModel = new ChatUpdateModel()
+                            {
+                                Id = chat.Id,
+                                Viewed = DateTime.Now
+                            };
+
+                            var chatDTO = chatAPI.UpdateChat(chatModel);
+
+                            chatsDTO.Add(chatDTO);
+                        }
+
+                        return Ok(chatsDTO);
+                    }
+                    else
+                        return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
+                }
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
+
         [HttpPost("GetChatConversation", Name = "GetChatConversation")]
         public ActionResult<List<ChatDTO>> GetChatConversation(ChatGetConversationModel chatModel)
         {

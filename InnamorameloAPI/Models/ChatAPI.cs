@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
 
@@ -116,6 +117,38 @@ namespace InnamorameloAPI.Models
 
                 var filter = Builders<ChatMongoDB>.Filter.Eq(x => x.ReceiverId, new ObjectId(chatModel.ReceiverId));
                 var find = chats.Find(filter).Skip(chatModel.Skip).Limit(chatModel.Limit).SortByDescending(x => x.Timestamp).ToList();
+
+                var chatList = new List<ChatDTO>();
+
+                foreach (var chatFind in find)
+                {
+                    var chat = new ChatDTO();
+                    Validator.CopyProperties(chatFind, chat);
+
+                    chatList.Add(chat);
+                }
+
+                return chatList;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return null;
+        }
+
+        public List<ChatDTO>? GetMessagesNotVisualized(string userId, string receiverId)
+        {
+            try
+            {
+                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoCollection<ChatMongoDB> chats = innamoramelo.GetCollection<ChatMongoDB>("Chats");
+
+                var filter = Builders<ChatMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(userId));
+                filter &= Builders<ChatMongoDB>.Filter.Eq(x => x.ReceiverId, new ObjectId(receiverId));
+                filter &= Builders<ChatMongoDB>.Filter.Eq(x => x.Viewed, null);
+                var find = chats.Find(filter).ToList();
 
                 var chatList = new List<ChatDTO>();
 
