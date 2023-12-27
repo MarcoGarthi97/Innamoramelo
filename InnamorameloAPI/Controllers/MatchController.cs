@@ -29,7 +29,7 @@ namespace InnamorameloAPI.Controllers
                             receiverId
                         };
 
-                        matchDTO = matchAPI.GetMatchByIdUsers(matchDTO);
+                        matchDTO = matchAPI.GetMatchByUsersId(matchDTO);
                         
                         return Ok(matchDTO);
                     }

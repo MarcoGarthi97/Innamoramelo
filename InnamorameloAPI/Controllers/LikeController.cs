@@ -1,4 +1,5 @@
 ﻿using InnamorameloAPI.Models;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InnamorameloAPI.Controllers
@@ -110,7 +111,7 @@ namespace InnamorameloAPI.Controllers
                         var likes = likeAPI.GetAllLike(likeDTO.UserId);
                         var like = likes.FirstOrDefault(x => x.ReceiverId == likeDTO.ReceiverId);
 
-                        if(like == null)
+                        if (like == null)
                         {
                             var insert = likeAPI.InsertLike(likeDTO);
 
@@ -119,10 +120,12 @@ namespace InnamorameloAPI.Controllers
                                 likes = likeAPI.GetAllLike(likeDTO.UserId);
                                 like = likes.FirstOrDefault(x => x.ReceiverId == likeDTO.ReceiverId);
 
+                                MatchInsert(likeDTO.UserId, likeDTO.ReceiverId);
+
                                 if (like != null)
                                     return Ok(like);
                             }
-                        }                        
+                        }
                     }
                     else
                         return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
@@ -146,10 +149,15 @@ namespace InnamorameloAPI.Controllers
                     if (auth.CheckLevelUserByToken(authHeader))
                     {
                         var likeAPI = new LikeAPI();
-                        var update = likeAPI.UpdateLike(likeUpdate);
+                        var likeDTO = likeAPI.UpdateLike(likeUpdate);
 
-                        if (update != null)
-                            return Ok(update);
+                        if (likeUpdate.IsLiked.Value)
+                            MatchInsert(likeDTO.UserId, likeDTO.ReceiverId);
+                        else
+                            MatchDelete(likeDTO.UserId, likeDTO.ReceiverId);
+
+                        if (likeDTO != null)
+                            return Ok(likeDTO);
                     }
                     else
                         return badRequest.CreateBadRequest("Unauthorized", "User not authorizated", 404);
@@ -174,11 +182,13 @@ namespace InnamorameloAPI.Controllers
                     {
                         var likeAPI = new LikeAPI();
                         var likes = likeAPI.GetAllLike(likeDelete.UserId);
-                        var like = likes.FirstOrDefault(x => x.Id == likeDelete.Id);
+                        var likeDTO = likes.FirstOrDefault(x => x.Id == likeDelete.Id);
 
-                        if (like != null)
+                        if (likeDTO != null)
                         {
                             var delete = likeAPI.DeleteLike(likeDelete.Id);
+
+                            MatchInsert(likeDTO.UserId, likeDTO.ReceiverId);
 
                             if (delete != null)
                                 return Ok(delete);
@@ -222,6 +232,65 @@ namespace InnamorameloAPI.Controllers
             }
 
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
+
+        private void MatchInsert(string userId, string receiverId)
+        {
+            try
+            {
+                var likeAPI = new LikeAPI();
+                var likes = likeAPI.GetAllLike(receiverId);
+                var like = likes.FirstOrDefault(x => x.ReceiverId == userId);
+
+                if (like.IsLiked.Value)
+                {
+                    var matchDTO = new MatchDTO();
+                    matchDTO.UsersId = new List<string>
+                    {
+                        userId,
+                        receiverId
+                    };
+
+                    var matchAPI = new MatchAPI();
+                    if(matchAPI.GetMatchByUsersId(matchDTO) == null)
+                        matchDTO = matchAPI.InsertMatch(matchDTO);
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        private void MatchDelete(string userId, string receiverId)
+        {
+            try
+            {
+                var likeAPI = new LikeAPI();
+                var likes = likeAPI.GetAllLike(receiverId);
+                var like = likes.FirstOrDefault(x => x.ReceiverId == userId);
+
+                if (like.IsLiked.Value)
+                {
+                    var matchDTO = new MatchDTO();
+                    matchDTO.UsersId = new List<string>
+                    {
+                        userId,
+                        receiverId
+                    };
+
+                    var matchAPI = new MatchAPI();
+                    var result = matchAPI.DeleteMatch(matchDTO);
+
+                    var chatAPI = new ChatAPI();
+                    result = chatAPI.DeleteChatByUserId(userId);
+                    result = chatAPI.DeleteChatByReceiverId(receiverId);
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
     }
 }

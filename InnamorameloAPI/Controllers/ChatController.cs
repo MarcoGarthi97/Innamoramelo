@@ -25,8 +25,16 @@ namespace InnamorameloAPI.Controllers
                         
                         if(chatDTO != null)
                         {
+                            var matchDTO = new MatchDTO();
+                            matchDTO.UsersId = new List<string>
+                            {
+                                userDTO.Id,
+                                chatDTO.ReceiverId
+                            };
+
                             var matchAPI = new MatchAPI();
-                            if (matchAPI.IsMatched(chatDTO.UserId, chatDTO.ReceiverId))
+
+                            if (matchAPI.GetMatchByUsersId(matchDTO) != null)
                                 return Ok(chatDTO);
                         }
                     }
@@ -52,8 +60,16 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
+                        var matchDTO = new MatchDTO();
+                        matchDTO.UsersId = new List<string>
+                        {
+                            userDTO.Id,
+                            chatModel.ReceiverId
+                        };
+
                         var matchAPI = new MatchAPI();
-                        if (matchAPI.IsMatched(userDTO.Id, chatModel.ReceiverId))
+
+                        if (matchAPI.GetMatchByUsersId(matchDTO) != null)
                         {
                             if (chatModel.Skip == null)
                                 chatModel.Skip = 0;
@@ -80,7 +96,7 @@ namespace InnamorameloAPI.Controllers
         }
 
         [HttpPost("InsertChat", Name = "InsertChat")]
-        public ActionResult<bool> InsertChat(ChatInsertModel chatModal)
+        public ActionResult<bool> InsertChat(ChatInsertModel chatModel)
         {
             try
             {
@@ -89,11 +105,19 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
+                        var matchDTO = new MatchDTO();
+                        matchDTO.UsersId = new List<string>
+                        {
+                            userDTO.Id,
+                            chatModel.ReceiverId
+                        };
+
                         var matchAPI = new MatchAPI();
-                        if (matchAPI.IsMatched(userDTO.Id, chatModal.ReceiverId))
+
+                        if (matchAPI.GetMatchByUsersId(matchDTO) != null)
                         {
                             var chatDTO = new ChatDTO();
-                            Validator.CopyProperties(chatModal, chatDTO);
+                            Validator.CopyProperties(chatModel, chatDTO);
                             chatDTO.UserId = userDTO.Id;
 
                             var chatAPI = new ChatAPI();
@@ -124,8 +148,16 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
+                        var matchDTO = new MatchDTO();
+                        matchDTO.UsersId = new List<string>
+                        {
+                            userDTO.Id,
+                            chatModel.ReceiverId
+                        };
+
                         var matchAPI = new MatchAPI();
-                        if (matchAPI.IsMatched(userDTO.Id, chatModel.ReceiverId))
+
+                        if (matchAPI.GetMatchByUsersId(matchDTO) != null)
                         {
                             var chatAPI = new ChatAPI();
                             var chat = chatAPI.UpdateChat(chatModel);

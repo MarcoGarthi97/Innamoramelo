@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Text.RegularExpressions;
 
 namespace InnamorameloAPI.Models
 {
@@ -7,12 +8,14 @@ namespace InnamorameloAPI.Models
     {
         static private MongoAPI mongo = new MongoAPI();
 
-        internal MatchDTO? GetMatchByIdUsers(MatchDTO matchDTO)
+        internal MatchDTO? GetMatchByUsersId(MatchDTO matchDTO)
         {
             try
             {
-                var matchMongoDB = new MatchMongoDB();
-                Validator.CopyProperties(matchDTO, matchMongoDB);
+                //var matchMongoDB = new MatchMongoDB();
+                //Validator.CopyProperties(matchDTO, matchMongoDB);
+
+                var matchMongoDB = CopyForMongo(matchDTO);
 
                 var filter = Builders<MatchMongoDB>.Filter.AnyIn(x => x.UsersId, matchMongoDB.UsersId);
                 matchDTO = GetMatch(filter);
@@ -55,8 +58,9 @@ namespace InnamorameloAPI.Models
 
                 if (find != null)
                 {
-                    var matchDTO = new MatchDTO();
-                    Validator.CopyProperties(find, matchDTO);
+                    //var matchDTO = new MatchDTO();
+                    //Validator.CopyProperties(find, matchDTO);
+                    var matchDTO = CopyForDTO(find);
 
                     return matchDTO;
                 }
@@ -83,8 +87,9 @@ namespace InnamorameloAPI.Models
 
                 foreach (var match in find)
                 {
-                    var matchDTO = new MatchDTO();
-                    Validator.CopyProperties(match, matchDTO);
+                    //var matchDTO = new MatchDTO();
+                    //Validator.CopyProperties(match, matchDTO);
+                    var matchDTO = CopyForDTO(match);
 
                     matchesDTO.Add(matchDTO);
                 }
@@ -101,15 +106,16 @@ namespace InnamorameloAPI.Models
         {
             try
             {
-                var matchMongoDB = new MatchMongoDB();
-                Validator.CopyProperties(matchDTO, matchMongoDB);
+                //var matchMongoDB = new MatchMongoDB();
+                //Validator.CopyProperties(matchDTO, matchMongoDB);
+                var matchMongoDB = CopyForMongo(matchDTO);
 
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
                 IMongoCollection<MatchMongoDB> matches = innamoramelo.GetCollection<MatchMongoDB>("Matches");
 
                 matches.InsertOne(matchMongoDB);
 
-                matchDTO = GetMatchByIdUsers(matchDTO);
+                matchDTO = GetMatchByUsersId(matchDTO);
 
                 return matchDTO;
             }
@@ -125,8 +131,9 @@ namespace InnamorameloAPI.Models
         {
             try
             {
-                var matchMongoDB = new MatchMongoDB();
-                Validator.CopyProperties(matchDTO, matchMongoDB);
+                //var matchMongoDB = new MatchMongoDB();
+                //Validator.CopyProperties(matchDTO, matchMongoDB);
+                var matchMongoDB = CopyForMongo(matchDTO);
 
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
                 IMongoCollection<MatchMongoDB> matches = innamoramelo.GetCollection<MatchMongoDB>("Matches");
@@ -164,6 +171,59 @@ namespace InnamorameloAPI.Models
             }
 
             return false;
+        }
+
+        private MatchMongoDB CopyForMongo(MatchDTO matchDTO)
+        {
+            var matchMongoDB = new MatchMongoDB();
+
+            try
+            {
+                if(matchDTO.Id  != null)
+                {
+                    matchMongoDB.Id = new ObjectId(matchDTO.Id);
+                }
+
+                if(matchDTO.UsersId != null)
+                {
+                    matchMongoDB.UsersId = new List<ObjectId>()
+                    {
+                        new ObjectId(matchDTO.UsersId[0]),
+                        new ObjectId(matchDTO.UsersId[1])
+                    };
+                }
+            }
+            catch(Exception ex)
+            {
+
+            }
+
+            return matchMongoDB;
+        }
+
+        private MatchDTO CopyForDTO(MatchMongoDB matchMongoDB)
+        {
+            var matchDTO = new MatchDTO();
+
+            try
+            {
+                matchDTO.Id = matchMongoDB.Id.ToString();
+
+                if(matchMongoDB.UsersId != null)
+                {
+                    matchDTO.UsersId = new List<string>()
+                    {
+                        matchMongoDB.UsersId[0].ToString(),
+                        matchMongoDB.UsersId[1].ToString()
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return matchDTO;
         }
     }
 }
