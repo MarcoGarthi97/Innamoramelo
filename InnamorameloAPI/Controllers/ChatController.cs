@@ -50,7 +50,7 @@ namespace InnamorameloAPI.Controllers
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
-        [HttpGet("GetChatConversation", Name = "GetChatConversation")]
+        [HttpPost("GetChatConversation", Name = "GetChatConversation")]
         public ActionResult<List<ChatDTO>> GetChatConversation(ChatGetConversationModel chatModel)
         {
             try
