@@ -45,7 +45,7 @@ namespace InnamorameloAPI.Controllers
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
-        [HttpGet("GetMatch", Name = "GetMatch")]
+        [HttpGet("GetAllMatch", Name = "GetAllMatch")]
         public ActionResult<List<MatchDTO>> GetAllMatch()
         {
             try
