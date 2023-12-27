@@ -44,7 +44,7 @@ namespace InnamorameloAPI.Models
             return null;
         }
 
-        internal MatchDTO? GetMatch(FilterDefinition<MatchMongoDB> filter)
+        private MatchDTO? GetMatch(FilterDefinition<MatchMongoDB> filter)
         {
             try
             {
