@@ -145,8 +145,8 @@ namespace InnamorameloAPI.Models
                 IMongoDatabase innamoramelo = mongo.GetDatabase();
                 IMongoCollection<ChatMongoDB> chats = innamoramelo.GetCollection<ChatMongoDB>("Chats");
 
-                var filter = Builders<ChatMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(userId));
-                filter &= Builders<ChatMongoDB>.Filter.Eq(x => x.ReceiverId, new ObjectId(receiverId));
+                var filter = Builders<ChatMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(receiverId));
+                filter &= Builders<ChatMongoDB>.Filter.Eq(x => x.ReceiverId, new ObjectId(userId));
                 filter &= Builders<ChatMongoDB>.Filter.Eq(x => x.Viewed, null);
                 var find = chats.Find(filter).ToList();
 
