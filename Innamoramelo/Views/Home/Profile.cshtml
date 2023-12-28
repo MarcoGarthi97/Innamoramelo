@@ -38,7 +38,7 @@
         color: white;
     }
 
-    section{
+    section {
         color: white;
     }
 
@@ -94,30 +94,32 @@
         border: 0;
     }
 </style>
-
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card bg-dark" id="card">
-            <div class="card-header">
-                <h2>Profile</h2>
-            </div>
-            <div class="row" id="card-body">
-                
-            </div>
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-6">
-                        <button type="button" id="btnBack" class="btn btn-primary">←</button>
+<div class="container">
+    <main role="main" class="pb-3">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card bg-dark" id="card">
+                    <div class="card-header">
+                        <h2>Profile</h2>
                     </div>
-                    <div class="col-md-6 text-end">
-                        <button type="button" id="btnContinue" class="btn btn-primary">Continue</button>
+                    <div class="row" id="card-body">
+
+                    </div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button type="button" id="btnBack" class="btn btn-primary">←</button>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button type="button" id="btnContinue" class="btn btn-primary">Continue</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 </div>
-
 <script>
     var urlRegister = '@Url.Action("Register", "Login")'
     var urlVerify = '@Url.Action("CheckSecretCode", "Login")'

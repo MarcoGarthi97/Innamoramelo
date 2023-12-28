@@ -1,0 +1,89 @@
+<link rel="stylesheet" href="~/css/chat.css">
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="">
+
+                <div class="">
+                    <div class="">
+                        <div class="">
+                            <input type="text" class="form-control" placeholder="Search...">
+                        </div>
+                    </div>
+                </div>
+                <div id="div-contacts">
+                </div>
+
+                <input type="button" class="btn btn-primary" id="test" value="test">
+
+                <hr class="d-block d-lg-none mt-1 mb-0">
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="">
+                <div class="d-flex align-items-center py-1">
+                    <div class="position-relative">
+                        <img src="https://bootdey.com/img/Content/avatar/avatar3.png" class="rounded-circle mr-1"
+                            alt="Sharon Lessman" width="40" height="40">
+                    </div>
+                    <div class="flex-grow-1 pl-3">
+                        <strong>Sharon Lessman</strong>
+                    </div>
+                </div>
+
+                <div class="position-relative">
+                    <div class="chat-messages p-4 no-overflow">
+
+                        <div class="chat-message-right pb-1">
+                            <div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
+                                Lorem ipsum dolor sit amet, vis erat denique in, dicunt prodesset te vix.
+                                <div class="text-muted small text-nowrap text-end">
+                                    2:33 ✓
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-message-right pb-4">
+                            <div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
+                                Lorem ipsum dolor sit amet, vis erat denique in, dicunt prodesset te vix.
+                                <div class="text-muted small text-nowrap text-end">
+                                    2:33 ✓
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-message-left pb-1">
+                            <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
+                                Lorem ipsum dolor sit amet, vis erat denique in, dicunt prodesset te vix.
+                                <div class="text-muted small text-nowrap text-end">
+                                    2:33 ✓
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="potti">
+                    <div class="flex-grow-0 py-3 px-4 border-top">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Type your message">
+                            <button class="btn btn-primary">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var urlGetMatches = '@Url.Action("GetMatches", "Match")'
+    var urlGetContacts = '@Url.Action("GetContacts", "Chat")'
+    var urlGetConversation = '@Url.Action("GetConversation", "Chat")'
+    var urlVisualizeMessages = '@Url.Action("VisualizeMessages", "Chat")'
+    var urlGetContact = '@Url.Action("GetContact", "Chat")'
+</script>
+
+<script src="~/js/chat.js"></script>

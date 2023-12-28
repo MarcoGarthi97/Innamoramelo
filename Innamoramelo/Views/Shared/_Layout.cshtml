@@ -17,6 +17,7 @@
             color: white !important;
             scrollbar-width: thin !important;
             scrollbar-color: #3B71CA !important;
+            overflow-x: hidden;
         }
 
         body::-webkit-scrollbar {
@@ -80,7 +81,7 @@
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Register">Register</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Profile">Profile</a> <!--Da cancellare-->
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Chat">Chat</a> <!--Da cancellare-->
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Photo">Photo</a> <!--Da cancellare-->
@@ -90,11 +91,8 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    @RenderBody()
+    
 
     <!--<footer class="border-top footer text-muted">
         <div class="container">

@@ -39,6 +39,33 @@ namespace Innamoramelo.Models
             return null;
         }
 
+        internal async Task<UserDTO?> GetUserById(string id, string token)
+        {
+            try
+            {
+                var options = new RestClientOptions(UrlAPI)
+                {
+                    MaxTimeout = -1,
+                };
+
+                var client = new RestClient(options);
+
+                var request = new RestRequest("GetUserById?id=" + id, Method.Get);
+                request.AddHeader("Authorization", "Bearer " + token);
+
+                RestResponse response = await client.ExecuteAsync(request);
+
+                var userDTO = JsonConvert.DeserializeObject<UserDTO>(response.Content);
+                return userDTO;
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return null;
+        }
+
         internal async Task<UserDTO?> InsertUser(UserCreateViewModel userModel, string token)
         {
             try

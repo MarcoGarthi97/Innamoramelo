@@ -79,5 +79,13 @@ namespace Innamoramelo.Controllers
 
             return View("Login");
         }
+
+        public IActionResult Chat()
+        {
+            if (Authentication())
+                return View();
+            else
+                return View("Chat");
+        }
     }
 }
