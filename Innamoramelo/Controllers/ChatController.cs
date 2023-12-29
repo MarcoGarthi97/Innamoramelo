@@ -139,6 +139,8 @@ namespace Innamoramelo.Controllers
                 var chatAPI = new ChatAPI(Config);
                 var chatsDTO = chatAPI.GetChatConversation(chatModel, Token).Result;
 
+                chatsDTO = chatsDTO.OrderBy(x => x.Timestamp).ToList();
+
                 return Ok(chatsDTO);
             }
             catch (Exception ex)
@@ -159,6 +161,28 @@ namespace Innamoramelo.Controllers
                 var chatsDTO = chatAPI.VisualizeMessages(receiverId, Token).Result;
 
                 return Ok(chatsDTO);
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
+
+        public ActionResult<bool> InsertChat(string json)
+        {
+            try
+            {
+                var chatModel = JsonConvert.DeserializeObject<ChatInsertModel>(json);
+                chatModel.Timestamp = DateTime.Now;
+
+                Authentication();
+
+                var chatAPI = new ChatAPI(Config);
+                var result = chatAPI.InsertChat(chatModel, Token).Result;
+
+                return Ok(result);
             }
             catch (Exception ex)
             {

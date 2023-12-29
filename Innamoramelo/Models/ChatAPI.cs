@@ -69,5 +69,39 @@ namespace Innamoramelo.Models
 
             return null;
         }
+
+        internal async Task<bool?> InsertChat(ChatInsertModel chatModel, string token)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(chatModel);
+
+                var options = new RestClientOptions(UrlAPI)
+                {
+                    MaxTimeout = -1,
+                };
+
+                var client = new RestClient(options);
+
+                var request = new RestRequest("InsertChat", Method.Post);
+                request.AddHeader("Authorization", "Bearer " + token);
+
+                var body = json;
+                request.AddStringBody(body, DataFormat.Json);
+
+                RestResponse response = await client.ExecuteAsync(request);
+
+                if (response.Content == "true")
+                    return true;
+                else
+                    return false;
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return null;
+        }
     }
 }

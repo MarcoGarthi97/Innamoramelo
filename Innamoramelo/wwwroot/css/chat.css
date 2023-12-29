@@ -1,17 +1,7 @@
-body{margin-top:20px; color: white;}
-
-.chat-online {
-    color: #34ce57
-}
-
-.chat-offline {
-    color: #e4606d
-}
 
 .chat-messages {
     display: flex;
     flex-direction: column;
-    max-height: 800px;
     overflow-y: scroll
 }
 
@@ -59,8 +49,16 @@ body{margin-top:20px; color: white;}
     overflow-y: hidden;
 }
 
-.potti{
+.down{
     position: absolute;
     bottom: 0 !important;
     width: 74%;
+}
+
+.conversation-list{
+    margin-top: 3%;
+}
+
+.conversation-list:hover{
+    background-color: #2a4142 !important;
 }
