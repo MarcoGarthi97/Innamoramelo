@@ -8,8 +8,16 @@ namespace InnamorameloAPI.Controllers
     [Route("[controller]")]
     public class PhotoController : ControllerBase
     {
-        static private AuthenticationAPI auth = new AuthenticationAPI();
+        private static IConfiguration Config;
+
+        static private AuthenticationAPI auth;
         static private MyBadRequest badRequest = new MyBadRequest();
+
+        public PhotoController(IConfiguration _config)
+        {
+            Config = _config;
+            auth = new AuthenticationAPI(Config);
+        }
 
         [HttpGet("GetPhotos", Name = "GetPhotos")]
         public ActionResult<List<PhotoDTO>> GetPhotos()
@@ -21,7 +29,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var photoAPI = new PhotoAPI();
+                        var photoAPI = new PhotoAPI(Config);
                         var photos = photoAPI.GetPhotosByUserId(userDTO.Id);
 
                         if(photos != null)
@@ -48,7 +56,7 @@ namespace InnamorameloAPI.Controllers
                 {
                     if (auth.CheckLevelUserByToken(authHeader))
                     {
-                        var photoAPI = new PhotoAPI();
+                        var photoAPI = new PhotoAPI(Config);
                         var photos = photoAPI.GetPhotosByUserId(userId);
 
                         if (photos != null)
@@ -76,7 +84,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var photoAPI = new PhotoAPI();
+                        var photoAPI = new PhotoAPI(Config);
                         var photos = photoAPI.GetPhotosByUserId(userDTO.Id);
 
                         if (photos.Count < 3)
@@ -125,7 +133,7 @@ namespace InnamorameloAPI.Controllers
                         var photo = new PhotoViewModel();
                         Validator.CopyProperties(updateModel, photo);
 
-                        var photoAPI = new PhotoAPI();
+                        var photoAPI = new PhotoAPI(Config);
                         var update = photoAPI.UpdatePhoto(photo);
 
                         return Ok(update);
@@ -152,7 +160,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var photoAPI = new PhotoAPI();
+                        var photoAPI = new PhotoAPI(Config);
                         var photoDTO = photoAPI.GetPhotoById(new ObjectId(id));
 
                         if(photoDTO.UserId == userDTO.Id)
@@ -183,7 +191,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var photoAPI = new PhotoAPI();
+                        var photoAPI = new PhotoAPI(Config);
 
                         var delete = photoAPI.DeletePhotosByIdUser(userDTO.Id);
                         return Ok(delete);

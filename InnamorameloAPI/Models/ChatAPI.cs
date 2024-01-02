@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Org.BouncyCastle.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
@@ -9,7 +10,15 @@ namespace InnamorameloAPI.Models
 {
     public class ChatAPI
     {
-        static private MongoAPI mongo = new MongoAPI();
+        private static IConfiguration Config; 
+        
+        static private MongoAPI mongo;
+
+        public ChatAPI(IConfiguration config)
+        {
+            Config = config;
+            mongo = new MongoAPI(Config);
+        }
 
         public ChatDTO? GetChatById(string id)
         {

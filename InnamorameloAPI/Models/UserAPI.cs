@@ -1,12 +1,21 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
 using AutoMapper;
+using Org.BouncyCastle.Utilities;
 
 namespace InnamorameloAPI.Models
 {
     public class UserAPI
     {
-        static private MongoAPI mongo = new MongoAPI();
+        private static IConfiguration Config;
+
+        static private MongoAPI mongo;
+
+        public UserAPI(IConfiguration config)
+        {
+            Config = config;
+            mongo = new MongoAPI(Config);
+        }
 
         internal UserDTO? GetUserByEmail(string email)
         {

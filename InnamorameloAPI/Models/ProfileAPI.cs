@@ -1,12 +1,21 @@
 ﻿using AutoMapper;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Org.BouncyCastle.Utilities;
 
 namespace InnamorameloAPI.Models
 {
     public class ProfileAPI
     {
-        static private MongoAPI mongo = new MongoAPI();
+        private static IConfiguration Config;
+
+        static private MongoAPI mongo;
+
+        public ProfileAPI(IConfiguration config)
+        {
+            Config = config;
+            mongo = new MongoAPI(Config);
+        }
 
         private ProfileDTO? GetProfile(FilterDefinition<ProfileMongoDB> filter)
         {

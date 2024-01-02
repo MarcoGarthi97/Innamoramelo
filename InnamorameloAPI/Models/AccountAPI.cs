@@ -7,14 +7,15 @@ namespace InnamorameloAPI.Models
 {
     public class AccountAPI
     {
-        [BsonIgnoreIfDefault]
-        [JsonConverter(typeof(ObjectIdConverter))]
-        public ObjectId Id { get; set; }
-        public string? Username { get; set; }
-        public string? Password { get; set; }
-        public string? Level { get; set; }
+        private static IConfiguration Config;
 
-        static private MongoAPI mongo = new MongoAPI();
+        static private MongoAPI mongo;
+
+        public AccountAPI(IConfiguration config)
+        {
+            Config = config;
+            mongo = new MongoAPI(Config);
+        }
 
         internal AccountDTO? GetAccount(string username)
         {

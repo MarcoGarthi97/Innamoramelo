@@ -5,7 +5,15 @@ namespace InnamorameloAPI.Models
 {
     public class LikeAPI
     {
-        static private MongoAPI mongo = new MongoAPI();
+        private static IConfiguration Config;
+
+        static private MongoAPI mongo;
+
+        public LikeAPI(IConfiguration config)
+        {
+            Config = config;
+            mongo = new MongoAPI(Config);
+        }
 
         internal LikeDTO? GetLike(string id)
         {

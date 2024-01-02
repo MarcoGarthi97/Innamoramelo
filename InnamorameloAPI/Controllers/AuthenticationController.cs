@@ -1,6 +1,7 @@
 ﻿using AutoMapper.Internal;
 using InnamorameloAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace InnamorameloAPI.Controllers
 {
@@ -8,6 +9,12 @@ namespace InnamorameloAPI.Controllers
     [Route("[controller]")]
     public class AuthenticationController : ControllerBase
     {
+        internal IConfiguration Config;
+        public AuthenticationController(IConfiguration _config)
+        {
+            Config = _config;
+        }
+
         static private MyBadRequest badRequest = new MyBadRequest();
 
         [HttpPost("GetAuthentication", Name = "GetAuthentication")]
@@ -17,12 +24,12 @@ namespace InnamorameloAPI.Controllers
             {
                 if (Validator.ValidateFields(user))
                 {
-                    var accountAPI = new AccountAPI();
+                    var accountAPI = new AccountAPI(Config);
                     var account = accountAPI.GetAccount(user.Email, user.Password);
 
                     if(account != null)
                     {
-                        var authAPI = new AuthenticationAPI();
+                        var authAPI = new AuthenticationAPI(Config);
                         var token = authAPI.GenerateToken(account);
 
                         return token;
@@ -49,7 +56,7 @@ namespace InnamorameloAPI.Controllers
                     {
                         string bearerToken = headerValue.Substring("Bearer ".Length).Trim();
 
-                        AuthenticationAPI authentication = new AuthenticationAPI();
+                        AuthenticationAPI authentication = new AuthenticationAPI(Config);
                         bool check = authentication.ValidateToken(bearerToken);
 
                         return check;
@@ -74,7 +81,7 @@ namespace InnamorameloAPI.Controllers
                     string headerValue = authHeader.ToString();
                     if (headerValue.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                     {
-                        AuthenticationAPI authentication = new AuthenticationAPI();
+                        AuthenticationAPI authentication = new AuthenticationAPI(Config);
                         bool check = authentication.CheckLevelUserByToken(authHeader);
 
                         return check;

@@ -7,8 +7,16 @@ namespace InnamorameloAPI.Models
 {
     public class AuthenticationAPI
     {
-        static private readonly string _secretKey = File.ReadAllText(@"C:\Users\marco\source\repos\_MyCredentials\Innamoramelo\SecretKeyAPI.txt"); // Chiave segreta per la firma del token (conservalo in modo sicuro)
+        private static IConfiguration Config;
+
+        static private string _secretKey; // Chiave segreta per la firma del token (conservalo in modo sicuro)
         static private readonly string _issuer = "InnamorameloAPI"; // L'emettitore del token (ad esempio il nome dell'applicazione)
+
+        public AuthenticationAPI(IConfiguration config)
+        {
+            Config = config;
+            _secretKey = File.ReadAllText(Config["SecretKeyPath"]);
+        }
 
         internal Token? GenerateToken(AccountDTO account)
         {
@@ -113,7 +121,7 @@ namespace InnamorameloAPI.Models
                 string email = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
                 // Ora, puoi confrontare l'ID dell'utente estratto con i dati nel tuo database
-                var userAPI = new UserAPI();
+                var userAPI = new UserAPI(Config);
                 var user = userAPI.GetUserByEmail(email);
 
                 if (user != null)
@@ -185,7 +193,7 @@ namespace InnamorameloAPI.Models
 
         private bool CheckIfUserExistsInDatabase(string email, string password, bool onlyUser = false)
         {
-            var accountAPI = new AccountAPI();
+            var accountAPI = new AccountAPI(Config);
 
             AccountDTO account;
             if (onlyUser)

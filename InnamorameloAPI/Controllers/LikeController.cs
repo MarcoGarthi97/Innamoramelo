@@ -8,8 +8,15 @@ namespace InnamorameloAPI.Controllers
     [Route("[controller]")]
     public class LikeController : ControllerBase
     {
-        static private AuthenticationAPI auth = new AuthenticationAPI();
+        private static IConfiguration Config;
+        static private AuthenticationAPI auth;
         static private MyBadRequest badRequest = new MyBadRequest();
+
+        public LikeController(IConfiguration _config)
+        {
+            Config = _config;
+            auth = new AuthenticationAPI(Config);
+        }
 
         [HttpGet("GetLike", Name = "GetLike")]
         public ActionResult<LikeDTO> GetLike(string id)
@@ -21,7 +28,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var likeAPI = new LikeAPI();
+                        var likeAPI = new LikeAPI(Config);
                         var likes = likeAPI.GetAllLike(userDTO.Id);
                         var like = likes.FirstOrDefault(x => x.Id == id);
 
@@ -49,7 +56,7 @@ namespace InnamorameloAPI.Controllers
                 {
                     if (auth.CheckLevelUserByToken(authHeader))
                     {
-                        var likeAPI = new LikeAPI();
+                        var likeAPI = new LikeAPI(Config);
                         var like = likeAPI.GetLike(id);
 
                         if (like != null)
@@ -77,7 +84,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var likeAPI = new LikeAPI();
+                        var likeAPI = new LikeAPI(Config);
                         var likes = likeAPI.GetAllLike(userDTO.Id);
 
                         if (likes != null)
@@ -107,7 +114,7 @@ namespace InnamorameloAPI.Controllers
                         var likeDTO = new LikeDTO();
                         Validator.CopyProperties(likeInsert, likeDTO);
 
-                        var likeAPI = new LikeAPI();
+                        var likeAPI = new LikeAPI(Config);
                         var likes = likeAPI.GetAllLike(likeDTO.UserId);
                         var like = likes.FirstOrDefault(x => x.ReceiverId == likeDTO.ReceiverId);
 
@@ -148,7 +155,7 @@ namespace InnamorameloAPI.Controllers
                 {
                     if (auth.CheckLevelUserByToken(authHeader))
                     {
-                        var likeAPI = new LikeAPI();
+                        var likeAPI = new LikeAPI(Config);
                         var likeDTO = likeAPI.UpdateLike(likeUpdate);
 
                         if (likeUpdate.IsLiked.Value)
@@ -180,7 +187,7 @@ namespace InnamorameloAPI.Controllers
                 {
                     if (auth.CheckLevelUserByToken(authHeader))
                     {
-                        var likeAPI = new LikeAPI();
+                        var likeAPI = new LikeAPI(Config);
                         var likes = likeAPI.GetAllLike(likeDelete.UserId);
                         var likeDTO = likes.FirstOrDefault(x => x.Id == likeDelete.Id);
 
@@ -216,7 +223,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var likeAPI = new LikeAPI();
+                        var likeAPI = new LikeAPI(Config);
                         var delete = likeAPI.DeleteLikesByUserId(userDTO.Id);
 
                         if (delete != null)
@@ -238,7 +245,7 @@ namespace InnamorameloAPI.Controllers
         {
             try
             {
-                var likeAPI = new LikeAPI();
+                var likeAPI = new LikeAPI(Config);
                 var likes = likeAPI.GetAllLike(receiverId);
                 var like = likes.FirstOrDefault(x => x.ReceiverId == userId);
 
@@ -251,7 +258,7 @@ namespace InnamorameloAPI.Controllers
                         receiverId
                     };
 
-                    var matchAPI = new MatchAPI();
+                    var matchAPI = new MatchAPI(Config);
                     if(matchAPI.GetMatchByUsersId(matchDTO) == null)
                         matchDTO = matchAPI.InsertMatch(matchDTO);
                 }
@@ -266,7 +273,7 @@ namespace InnamorameloAPI.Controllers
         {
             try
             {
-                var likeAPI = new LikeAPI();
+                var likeAPI = new LikeAPI(Config);
                 var likes = likeAPI.GetAllLike(receiverId);
                 var like = likes.FirstOrDefault(x => x.ReceiverId == userId);
 
@@ -279,10 +286,10 @@ namespace InnamorameloAPI.Controllers
                         receiverId
                     };
 
-                    var matchAPI = new MatchAPI();
+                    var matchAPI = new MatchAPI(Config);
                     var result = matchAPI.DeleteMatch(matchDTO);
 
-                    var chatAPI = new ChatAPI();
+                    var chatAPI = new ChatAPI(Config);
                     result = chatAPI.DeleteChatByUserId(userId);
                     result = chatAPI.DeleteChatByReceiverId(receiverId);
                 }

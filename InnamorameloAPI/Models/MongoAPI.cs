@@ -5,7 +5,12 @@ namespace InnamorameloAPI.Models
 {
     public class MongoAPI
     {
-        private string connectionString = File.ReadAllText(@"C:\Users\marco\source\repos\_MyCredentials\Innamoramelo\Mongo.txt");
+        private string connectionString;
+        public MongoAPI(IConfiguration config)
+        {
+            connectionString = File.ReadAllText(config["CredentialsMongoDB"]);
+        }
+
         internal IMongoDatabase GetDatabase(string db = "Innamoramelo")
         {
             var settings = MongoClientSettings.FromConnectionString(connectionString);

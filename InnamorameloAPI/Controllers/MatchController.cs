@@ -7,8 +7,15 @@ namespace InnamorameloAPI.Controllers
     [Route("[controller]")]
     public class MatchController : ControllerBase
     {
-        static private AuthenticationAPI auth = new AuthenticationAPI();
+        private static IConfiguration Config;
+        static private AuthenticationAPI auth;
         static private MyBadRequest badRequest = new MyBadRequest();
+
+        public MatchController(IConfiguration _config)
+        {
+            Config = _config;
+            auth = new AuthenticationAPI(Config);
+        }
 
         [HttpGet("GetMatch", Name = "GetMatch")]
         public ActionResult<MatchDTO> GetMatch(string receiverId)
@@ -20,7 +27,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var matchAPI = new MatchAPI();
+                        var matchAPI = new MatchAPI(Config);
 
                         var matchDTO = new MatchDTO();
                         matchDTO.UsersId = new List<string>
@@ -55,7 +62,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var matchAPI = new MatchAPI();
+                        var matchAPI = new MatchAPI(Config);
                         var matchesDTO = matchAPI.GetAllMatches(userDTO.Id);
 
                         return Ok(matchesDTO);

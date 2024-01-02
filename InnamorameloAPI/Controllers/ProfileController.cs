@@ -7,8 +7,15 @@ namespace InnamorameloAPI.Controllers
     [Route("[controller]")]
     public class ProfileController : ControllerBase
     {
-        static private AuthenticationAPI auth = new AuthenticationAPI();
+        private static IConfiguration Config;
+        static private AuthenticationAPI auth;
         static private MyBadRequest badRequest = new MyBadRequest();
+
+        public ProfileController(IConfiguration _config)
+        {
+            Config = _config;
+            auth = new AuthenticationAPI(Config);
+        }
 
         [HttpGet("GetProfile", Name = "GetProfile")]
         public ActionResult<ProfileDTO> GetProfile()
@@ -20,7 +27,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var profileAPI = new ProfileAPI();
+                        var profileAPI = new ProfileAPI(Config);
                         var profile = profileAPI.GetProfileByUserId(userDTO.Id);
 
                         if(profile != null)
@@ -47,7 +54,7 @@ namespace InnamorameloAPI.Controllers
                 {
                     if (auth.CheckLevelUserByToken(authHeader))
                     {
-                        var profileAPI = new ProfileAPI();
+                        var profileAPI = new ProfileAPI(Config);
                         var profile = profileAPI.GetProfileById(id);
 
                         if (profile != null) 
@@ -74,7 +81,7 @@ namespace InnamorameloAPI.Controllers
                 {
                     if (auth.CheckLevelUserByToken(authHeader))
                     {
-                        var profileAPI = new ProfileAPI();
+                        var profileAPI = new ProfileAPI(Config);
                         var profile = profileAPI.GetProfileByUserId(id);
 
                         if (profile != null)
@@ -102,7 +109,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var profileAPI = new ProfileAPI();
+                        var profileAPI = new ProfileAPI(Config);
                         var profileinserted = profileAPI.GetProfileByUserId(userDTO.Id);
                         if(profileinserted == null)
                         {
@@ -116,7 +123,7 @@ namespace InnamorameloAPI.Controllers
                             {
                                 userDTO.CreateProfile = true;
 
-                                var userAPI = new UserAPI();
+                                var userAPI = new UserAPI(Config);
                                 var userUpdate = userAPI.UpdateUser(userDTO);
 
                                 return Ok(profileinserted);
@@ -145,7 +152,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var profileAPI = new ProfileAPI();
+                        var profileAPI = new ProfileAPI(Config);
                         var profile = profileAPI.GetProfileByUserId(userDTO.Id);
                         if (profile != null)
                         {
@@ -181,7 +188,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var profileAPI = new ProfileAPI();
+                        var profileAPI = new ProfileAPI(Config);
                         var profile = profileAPI.GetProfileByUserId(userDTO.Id);
                         if (profile != null)
                         {

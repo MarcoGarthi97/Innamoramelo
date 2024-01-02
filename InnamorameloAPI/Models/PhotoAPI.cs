@@ -1,12 +1,21 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
+using Org.BouncyCastle.Utilities;
 
 namespace InnamorameloAPI.Models
 {
     public class PhotoAPI
     {
-        private readonly string path = File.ReadAllText(@"C:\Users\marco\source\repos\_MyCredentials\Innamoramelo\DirectoryPhoto.txt");
-        private static MongoAPI mongo = new MongoAPI();
+        private static IConfiguration Config;
+
+        static private MongoAPI mongo;
+        private readonly string path;
+        public PhotoAPI(IConfiguration config)
+        {
+            Config = config;
+            mongo = new MongoAPI(Config);
+            path = File.ReadAllText(Config["CredentialsMongoDB"]);
+        }
 
         internal PhotoDTO? GetPhotoById(ObjectId id)
         {

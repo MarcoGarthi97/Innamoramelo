@@ -8,8 +8,15 @@ namespace InnamorameloAPI.Controllers
     [Route("[controller]")]
     public class SecretCodeController : ControllerBase
     {
-        static private AuthenticationAPI auth = new AuthenticationAPI();
+        private static IConfiguration Config;
+        static private AuthenticationAPI auth;
         static private MyBadRequest badRequest = new MyBadRequest();
+
+        public SecretCodeController(IConfiguration _config)
+        {
+            Config = _config;
+            auth = new AuthenticationAPI(Config);
+        }
 
         [HttpGet("GetSecretCode", Name = "GetSecretCode")]
         public ActionResult<bool> GetSecretCode(bool reload = true)
@@ -21,10 +28,10 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var secretCodeAPI = new SecretCodeAPI();
+                        var secretCodeAPI = new SecretCodeAPI(Config);
                         var secretCodeDTO = secretCodeAPI.GetSecretCode(userDTO.Id, reload);
 
-                        var googleAPI = new GoogleAPI();
+                        var googleAPI = new GoogleAPI(Config);
                         var result = googleAPI.SendMail(userDTO.Email, secretCodeDTO.Code);
 
                         return result;
@@ -51,7 +58,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var secretCodeAPI = new SecretCodeAPI();
+                        var secretCodeAPI = new SecretCodeAPI(Config);
                         var secretCodeDTO = secretCodeAPI.GetSecretCode(userDTO.Id, false);
                         if (code == secretCodeDTO.Code && secretCodeDTO.Created.Value > DateTime.Now)
                         {

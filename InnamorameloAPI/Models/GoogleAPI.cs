@@ -5,7 +5,12 @@ namespace InnamorameloAPI.Models
 {
     public class GoogleAPI
     {
-        private readonly string[] _mail = File.ReadAllText(@"C:\Users\marco\source\repos\_MyCredentials\Innamoramelo\Gmail.txt").Split(';'); //user;AppPassword
+        private string[] _mail; //user;AppPassword
+
+        public GoogleAPI(IConfiguration config)
+        {
+            _mail = File.ReadAllText(config["CredentialsGmailPath"]).Split(';');
+        }
 
         internal bool SendMail(string emailUser, string code)
         {

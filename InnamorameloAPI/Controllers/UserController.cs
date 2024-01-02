@@ -9,8 +9,15 @@ namespace InnamorameloAPI.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        static private AuthenticationAPI auth = new AuthenticationAPI();
+        private static IConfiguration Config;
+        static private AuthenticationAPI auth;
         static private MyBadRequest badRequest = new MyBadRequest();
+
+        public UserController(IConfiguration _config)
+        {
+            Config = _config;
+            auth = new AuthenticationAPI(Config);
+        }
 
         [HttpGet("GetUser", Name = "GetUser")]
         public ActionResult<UserDTO> GetUser()
@@ -43,7 +50,7 @@ namespace InnamorameloAPI.Controllers
                 {
                     if (auth.CheckLevelUserByToken(authHeader))
                     {
-                        var userAPI = new UserAPI();
+                        var userAPI = new UserAPI(Config);
                         var user = userAPI.GetUserById(id);
 
                         if (user != null)
@@ -70,21 +77,21 @@ namespace InnamorameloAPI.Controllers
                 {
                     if (auth.CheckLevelUserByToken(authHeader))
                     {
-                        var userAPI = new UserAPI();
+                        var userAPI = new UserAPI(Config);
 
                         var loginCredential = new AuthenticationDTO(user.Email, user.Password);
                         if (!userAPI.CheckUser(loginCredential, true))
                         {
                             var account = new AccountDTO(loginCredential.Email, loginCredential.Password, "User");
 
-                            var accountAPI = new AccountAPI();
+                            var accountAPI = new AccountAPI(Config);
                             var insert = accountAPI.InsertAccount(account);
 
                             if (insert != null)
                             {
                                 var userDTO = userAPI.InsertUser(user);
 
-                                var secretCodeAPI = new SecretCodeAPI();
+                                var secretCodeAPI = new SecretCodeAPI(Config);
                                 var secretCodeDTO = secretCodeAPI.InsertSecretCode(userDTO.Id);
 
                                 return Ok(userDTO);
@@ -115,7 +122,7 @@ namespace InnamorameloAPI.Controllers
                     {
                         Validator.CopyProperties(user, userDTO);
 
-                        var userAPI = new UserAPI();
+                        var userAPI = new UserAPI(Config);
                         var result = userAPI.UpdateUser(userDTO);
 
                         if (result != null)
@@ -146,25 +153,25 @@ namespace InnamorameloAPI.Controllers
                     if (userDTO != null)
                     {
                         //TODO: Elimanare tutto ciò che è dell'utente
-                        var secretCodeAPI = new SecretCodeAPI();
+                        var secretCodeAPI = new SecretCodeAPI(Config);
                         var result = secretCodeAPI.DeleteSecretCodeByUserId(userDTO.Id);
 
-                        var accountAPI = new AccountAPI();
+                        var accountAPI = new AccountAPI(Config);
                         result = accountAPI.DeleteAccount(userDTO.Email);
 
-                        var userAPI = new UserAPI();
+                        var userAPI = new UserAPI(Config);
                         result = userAPI.DeleteUser(userDTO.Id);
 
-                        var profileAPI = new ProfileAPI();
+                        var profileAPI = new ProfileAPI(Config);
                         result = profileAPI.DeleteProfileByUserId(userDTO.Id);
 
-                        var photoAPI = new PhotoAPI();
+                        var photoAPI = new PhotoAPI(Config);
                         result = profileAPI.DeleteProfileByUserId(userDTO.Id);
 
-                        var likeAPI = new LikeAPI();
+                        var likeAPI = new LikeAPI(Config);
                         result = likeAPI.DeleteLikesByUserId(userDTO.Id);
 
-                        var chatAPI = new ChatAPI();
+                        var chatAPI = new ChatAPI(Config);
                         result = chatAPI.DeleteChatByUserId(userDTO.Id);
 
                         return Ok(result);

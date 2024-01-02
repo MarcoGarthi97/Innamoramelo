@@ -1,11 +1,20 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
+using Org.BouncyCastle.Utilities;
 
 namespace InnamorameloAPI.Models
 {
     public class JobAPI
     {
-        static private MongoAPI mongo = new MongoAPI();
+        private static IConfiguration Config;
+
+        static private MongoAPI mongo;
+
+        public JobAPI(IConfiguration config)
+        {
+            Config = config;
+            mongo = new MongoAPI(Config);
+        }
 
         internal List<JobDTO>? GetJob(string _filter)
         {

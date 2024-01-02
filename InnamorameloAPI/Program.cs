@@ -1,10 +1,21 @@
+using InnamorameloAPI;
 using InnamorameloAPI.Models;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var startup = new Startup(builder.Configuration);
 
+startup.ConfigureServices(builder.Services);
+
+var secretKeyPath = builder.Configuration["SecretKeyPath"];
+var credentialsGmailPath = builder.Configuration["CredentialsGmailPath"];
+var credentialsMongoDB = builder.Configuration["CredentialsMongoDB"];
+var directoryPhotos = builder.Configuration["directoryPhotos"];
+
+Console.WriteLine(secretKeyPath);
+
+// Add services to the container.
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -52,5 +63,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+startup.Configure(app, app.Environment);
 
 app.Run();

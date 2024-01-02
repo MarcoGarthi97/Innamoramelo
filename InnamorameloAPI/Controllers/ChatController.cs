@@ -7,8 +7,15 @@ namespace InnamorameloAPI.Controllers
     [Route("[controller]")]
     public class ChatController : ControllerBase
     {
-        static private AuthenticationAPI auth = new AuthenticationAPI();
+        private static IConfiguration Config;
+        static private AuthenticationAPI auth;
         static private MyBadRequest badRequest = new MyBadRequest();
+
+        public ChatController(IConfiguration _config)
+        {
+            Config = _config;
+            auth = new AuthenticationAPI(Config);
+        }
 
         [HttpGet("GetChat", Name = "GetChat")]
         public ActionResult<ChatDTO> GetChat(string id)
@@ -20,7 +27,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var chatAPI = new ChatAPI();
+                        var chatAPI = new ChatAPI(Config);
                         var chatDTO = chatAPI.GetChatById(id);
                         
                         if(chatDTO != null)
@@ -32,7 +39,7 @@ namespace InnamorameloAPI.Controllers
                                 chatDTO.ReceiverId
                             };
 
-                            var matchAPI = new MatchAPI();
+                            var matchAPI = new MatchAPI(Config);
 
                             if (matchAPI.GetMatchByUsersId(matchDTO) != null)
                                 return Ok(chatDTO);
@@ -62,7 +69,7 @@ namespace InnamorameloAPI.Controllers
                     {
                         var chatsDTO = new List<ChatDTO>();
 
-                        var chatAPI = new ChatAPI();
+                        var chatAPI = new ChatAPI(Config);
                         var notVisualizedChatsDTO = chatAPI.GetMessagesNotVisualized(userDTO.Id, receiverId);
 
                         foreach(var chat in notVisualizedChatsDTO)
@@ -109,7 +116,7 @@ namespace InnamorameloAPI.Controllers
                             chatModel.ReceiverId
                         };
 
-                        var matchAPI = new MatchAPI();
+                        var matchAPI = new MatchAPI(Config);
 
                         if (matchAPI.GetMatchByUsersId(matchDTO) != null)
                         {
@@ -119,7 +126,7 @@ namespace InnamorameloAPI.Controllers
                             if(chatModel.Limit == null)
                                 chatModel.Limit = 30;
 
-                            var chatAPI = new ChatAPI();
+                            var chatAPI = new ChatAPI(Config);
                             var chats = chatAPI.GetConversation(userDTO.Id, chatModel);
 
                             return Ok(chats);
@@ -154,7 +161,7 @@ namespace InnamorameloAPI.Controllers
                             chatModel.ReceiverId
                         };
 
-                        var matchAPI = new MatchAPI();
+                        var matchAPI = new MatchAPI(Config);
 
                         if (matchAPI.GetMatchByUsersId(matchDTO) != null)
                         {
@@ -162,7 +169,7 @@ namespace InnamorameloAPI.Controllers
                             Validator.CopyProperties(chatModel, chatDTO);
                             chatDTO.UserId = userDTO.Id;
 
-                            var chatAPI = new ChatAPI();
+                            var chatAPI = new ChatAPI(Config);
                             var result = chatAPI.Insertchat(chatDTO);
 
                             return Ok(result);
@@ -197,11 +204,11 @@ namespace InnamorameloAPI.Controllers
                             chatModel.ReceiverId
                         };
 
-                        var matchAPI = new MatchAPI();
+                        var matchAPI = new MatchAPI(Config);
 
                         if (matchAPI.GetMatchByUsersId(matchDTO) != null)
                         {
-                            var chatAPI = new ChatAPI();
+                            var chatAPI = new ChatAPI(Config);
                             var chat = chatAPI.UpdateChat(chatModel);
 
                             return Ok(chat);
@@ -229,7 +236,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var chatAPI = new ChatAPI();
+                        var chatAPI = new ChatAPI(Config);
                         var chat = chatAPI.GetChatsByUserId(id, userDTO.Id);
 
                         if(chat != null)
@@ -260,7 +267,7 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var chatAPI = new ChatAPI();
+                        var chatAPI = new ChatAPI(Config);
                         var result = chatAPI.DeleteChatByUserId(userDTO.Id);
 
                         return Ok(result);

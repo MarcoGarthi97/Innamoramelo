@@ -7,8 +7,15 @@ namespace InnamorameloAPI.Controllers
     [Route("[controller]")]
     public class CityController : Controller
     {
-        static private AuthenticationAPI auth = new AuthenticationAPI();
+        private static IConfiguration Config;
+        static private AuthenticationAPI auth;
         static private MyBadRequest badRequest = new MyBadRequest();
+
+        public CityController(IConfiguration _config)
+        {
+            Config = _config;
+            auth = new AuthenticationAPI(Config);
+        }
 
         [Obsolete("Method1 is deprecated, please use GetPlace instead.")]
         [HttpGet("GetCity", Name = "GetCity")]
@@ -22,7 +29,7 @@ namespace InnamorameloAPI.Controllers
                     {
                         if (filter.Length > 2)
                         {
-                            var cityAPI = new CityAPI();
+                            var cityAPI = new CityAPI(Config);
                             var citiesDTO = cityAPI.GetCity(filter);
 
                             return Ok(citiesDTO);

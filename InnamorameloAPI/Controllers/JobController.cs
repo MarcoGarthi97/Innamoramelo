@@ -7,8 +7,15 @@ namespace InnamorameloAPI.Controllers
     [Route("[controller]")]
     public class JobController : ControllerBase
     {
-        static private AuthenticationAPI auth = new AuthenticationAPI();
+        private static IConfiguration Config;
+        static private AuthenticationAPI auth;
         static private MyBadRequest badRequest = new MyBadRequest();
+
+        public JobController(IConfiguration _config)
+        {
+            Config = _config;
+            auth = new AuthenticationAPI(Config);
+        }
 
         [HttpGet("GetJob", Name = "GetJob")]
         public ActionResult<List<JobDTO>> GetJob(string filter)
@@ -21,7 +28,7 @@ namespace InnamorameloAPI.Controllers
                     {
                         if(filter.Length > 2)
                         {
-                            var jobAPI = new JobAPI();
+                            var jobAPI = new JobAPI(Config);
                             var jobsDTO = jobAPI.GetJob(filter);
 
                             return Ok(jobsDTO);
