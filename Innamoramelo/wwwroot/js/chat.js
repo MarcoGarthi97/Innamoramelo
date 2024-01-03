@@ -1,6 +1,7 @@
 $(document).ready(function () {
     var _receiverId = ''
     var _contancts = {}
+
     LoadComponents()
 
     function LoadComponents() {
@@ -14,7 +15,7 @@ $(document).ready(function () {
             success: function (result) {
                 var listId = []
                 result.forEach(function (item) {
-                    listId.push(item.usersId[0])
+                    listId.push(item)
                 })
 
                 GetContacts(listId)
@@ -43,7 +44,7 @@ $(document).ready(function () {
         })
     }
 
-    function CreateContacts(result){        
+    function CreateContacts(result) {
         $('#div-contacts').empty()
 
         result.forEach(function (item) {
@@ -84,63 +85,34 @@ $(document).ready(function () {
         VisualizeConversation(e.currentTarget.id)
     })
 
-    function GetConversation(receiverId, skip, limit) {
-        var obj = {}
-        obj.receiverId = receiverId
+    function GetConversation(receiverId, limit, skip) {
+        return new Promise(function (resolve, reject) {
+            var obj = {
+                receiverId: receiverId
+            };
 
-        if (skip != null)
-            obj.skip = skip
-
-        if (limit != null)
-            obj.limit = limit
-
-        var json = JSON.stringify(obj)
-
-        $.ajax({
-            url: urlGetConversation,
-            type: "POST",
-            data: { json: json },
-            success: function (result) {
-                $('.chat-messages').empty()
-
-
-                var htmlChat = ""
-                result.forEach(function (item) {
-                    if (item.userId == receiverId)
-                        htmlChat += `<div id="` + item.id + `" class="chat-message-left pb-1"><div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">`
-                    else
-                        htmlChat += `<div id="` + item.id + `" class="chat-message-right pb-1"><div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">`
-
-                    htmlChat += item.content + `<div class="text-muted small text-nowrap text-end">` +
-                        item.timestamp.substring(11, 16)
-
-                    if (item.userId != receiverId) {
-                        if (item.viewed != null)
-                            htmlChat += ' ✓✓'
-                        else
-                            htmlChat += ' ✓'
-                    }
-
-                    htmlChat += `</div> </div> </div>`
-                })
-
-                $('.chat-messages').append(htmlChat)
-
-                var htmlInput = `<div class="down">
-                <div class="flex-grow-0 py-3 px-4 border-top">
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="inputMessage" placeholder="Type your message">
-                        <button class="btn btn-primary" id="send">Send</button>
-                    </div>
-                </div>
-            </div>`
-
-                $('.col-md-9').append(htmlInput)
-            },
-            error: function (error) {
-                console.log(error)
+            if (skip != null) {
+                obj.skip = skip;
             }
-        })
+
+            if (limit != null) {
+                obj.limit = limit;
+            }
+
+            var json = JSON.stringify(obj);
+
+            $.ajax({
+                url: urlGetConversation,
+                type: "POST",
+                data: { json: json },
+                success: function (result) {
+                    resolve(result); 
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        });
     }
 
     function VisualizeConversation(receiverId) {
@@ -150,7 +122,7 @@ $(document).ready(function () {
             data: { receiverId: receiverId },
             success: function (result) {
                 GetBadgeNewMessage(receiverId)
-                GetConversation(receiverId)
+                GetUserConversation(receiverId)
                 GetAvatar(receiverId)
             },
             error: function (error) {
@@ -159,14 +131,55 @@ $(document).ready(function () {
         })
     }
 
-    function GetAvatar(id){ 
+    async function GetUserConversation(receiverId) {
+        var result = await GetConversation(receiverId);
+
+        $('.chat-messages').empty();
+
+        var htmlChat = "";
+        result.forEach(function (item) {
+            if (item.userId == receiverId) {
+                htmlChat += `<div id="` + item.id + `" class="chat-message-left pb-1"><div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">`;
+            } else {
+                htmlChat += `<div id="` + item.id + `" class="chat-message-right pb-1"><div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">`;
+            }
+
+            htmlChat += item.content + `<div class="text-muted small text-nowrap text-end">` +
+                item.timestamp.substring(11, 16);
+
+            if (item.userId != receiverId) {
+                if (item.viewed != null) {
+                    htmlChat += ' ✓✓';
+                } else {
+                    htmlChat += ' ✓';
+                }
+            }
+
+            htmlChat += `</div> </div> </div>`;
+        });
+
+        $('.chat-messages').append(htmlChat);
+
+        var htmlInput = `<div class="down">
+          <div class="flex-grow-0 py-3 px-4 border-top">
+            <div class="input-group">
+              <input type="text" class="form-control" id="inputMessage" placeholder="Type your message">
+              <button class="btn btn-primary" id="send">Send</button>
+            </div>
+          </div>
+        </div>`;
+
+        $('.col-md-9').append(htmlInput);
+
+        OverflowChat()
+    }
+
+    function GetAvatar(id) {
         $.ajax({
             url: urlGetUser,
             type: "POST",
             data: { id: id },
             success: function (result) {
-                console.log(result)
-                
                 var htmlAvatar = `<div class="d-flex align-items-center py-1">
                     <div class="position-relative">
                         <img src="https://bootdey.com/img/Content/avatar/avatar3.png" class="rounded-circle mr-1"
@@ -177,7 +190,7 @@ $(document).ready(function () {
                     </div>
                 </div>`
 
-                $('.col-md-9').prepend(htmlAvatar) 
+                $('.col-md-9').prepend(htmlAvatar)
             },
             error: function (error) {
                 console.log(error)
@@ -299,24 +312,24 @@ $(document).ready(function () {
         var div = 990
 
         if (height < 500)
-            div = 1200
+            div = 1300
         else if (height < 700)
-            div = 1100
+            div = 1200
         else if (height < 900)
-            div = 1000
+            div = 1100
 
         var maxHeight = 830 * height / div
 
         return maxHeight
     }
 
-    $('#filter').on('input', function(){
+    $('#filter').on('input', function () {
         console.log(_contancts)
         var txt = $('#filter').val().toLowerCase()
 
         var contactsFiltered = {}
 
-        if(txt != ""){
+        if (txt != "") {
             contactsFiltered = _contancts.filter(x => x.receiverName.toLowerCase().includes(txt))
         }
         else
@@ -326,14 +339,39 @@ $(document).ready(function () {
     })
 
     $('#test').on('click', function () {
-        GetBadgeNewMessage('655bb75d05c9f13660284221')
+        console.log(_receiverId)
+        GetNewMassege(_receiverId)
     })
 
-    Test()
-    function Test() {
-        var val = $('.chat-message-right').height()
-        val += 5
+    async function GetNewMassege(receiverId) {
+        var result = await GetConversation(receiverId, 1);
+        console.log(result)
+        if(result[0].receiverId != receiverId){
+            var htmlChat = "";
+            result.forEach(function (item) {
+                if (item.userId == receiverId) {
+                    htmlChat += `<div id="` + item.id + `" class="chat-message-left pb-1"><div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">`;
+                } else {
+                    htmlChat += `<div id="` + item.id + `" class="chat-message-right pb-1"><div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">`;
+                }
+    
+                htmlChat += item.content + `<div class="text-muted small text-nowrap text-end">` +
+                    item.timestamp.substring(11, 16);
+    
+                if (item.userId != receiverId) {
+                    if (item.viewed != null) {
+                        htmlChat += ' ✓✓';
+                    } else {
+                        htmlChat += ' ✓';
+                    }
+                }
+    
+                htmlChat += `</div> </div> </div>`;
+            });
+    
+            $('.chat-messages').append(htmlChat);
 
-        //$('.chat-message-right').height(val)
+            OverflowChat()
+        }
     }
 })

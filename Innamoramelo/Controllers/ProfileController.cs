@@ -43,7 +43,7 @@ namespace Innamoramelo.Controllers
                 var profileAPI = new ProfileAPI(Config);
                 var profileDTO = profileAPI.GetProfile(Token).Result;
 
-                if (profileDTO == null)
+                if (profileDTO.Id == null)
                     profileDTO = profileAPI.InsertProfile(profileModel, Token).Result;
                 else
                     profileDTO = profileAPI.UpdateProfile(profileModel, Token).Result;
@@ -63,7 +63,7 @@ namespace Innamoramelo.Controllers
         {
             try
             {
-                if(filter.Length > 2)
+                if(filter != null && filter.Length > 2)
                 {
                     AuthenticationAdmin();
 

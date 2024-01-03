@@ -1,5 +1,6 @@
 ﻿using Innamoramelo.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace Innamoramelo.Controllers
 {
@@ -10,7 +11,7 @@ namespace Innamoramelo.Controllers
             Config = _config;
         }
 
-        public ActionResult<List<MatchDTO>?> GetMatches()
+        public ActionResult<List<string>?> GetMatches()
         {
             try
             {
@@ -19,8 +20,21 @@ namespace Innamoramelo.Controllers
                 var matchAPI = new MatchAPI(Config);
                 var matchesDTO = matchAPI.GetMatches(Token).Result;
 
+                var jsonUser = _privateController.GetSession("User");
+                var userDTO = JsonConvert.DeserializeObject<UserDTO>(jsonUser);
+
+                var ids = new List<string>();
+
+                foreach(var matchDTO in matchesDTO)
+                {
+                    if (matchDTO.UsersId[0] != userDTO.Id)
+                        ids.Add(matchDTO.UsersId[0]);
+                    else
+                        ids.Add(matchDTO.UsersId[1]);
+                }
+
                 if (matchesDTO != null)
-                    return Ok(matchesDTO);
+                    return Ok(ids);
             }
             catch (Exception ex)
             {

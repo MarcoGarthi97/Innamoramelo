@@ -85,7 +85,7 @@ namespace Innamoramelo.Controllers
             if (Authentication())
                 return View();
             else
-                return View("Chat");
+                return View("Login");
         }
     }
 }
