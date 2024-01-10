@@ -252,6 +252,10 @@ $(document).ready(function () {
                 data: { json: json },
                 success: function (result) {
                     console.log(result)
+                    connection.invoke("SendMessage", _receiverId).catch(function (err) {
+                        return console.error(err.toString());
+                    });
+                    event.preventDefault();
                 },
                 error: function (error) {
                     console.log(error)
@@ -379,9 +383,8 @@ $(document).ready(function () {
 
     var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
     
-    connection.on("ReceiveMessage", function (user, message) {
-        console.log(user + ':' + message)
-        pippo()
+    connection.on("GetNewMassege", function () {
+        GetNewMassege() 
     });
     
     connection.start().then(function () {

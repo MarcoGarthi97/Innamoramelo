@@ -4,9 +4,10 @@ namespace Innamoramelo.Models
 {
     public class ChatHub : Hub
     {
-        public async Task SendMessage(string user, string message)
+        public async Task SendMessage(string userId)
         {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
+            await Clients.User(userId).SendAsync("GetNewMassege");
+            //await Clients.All.SendAsync("ReceiveMessage", userId, message);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Innamoramelo.Models;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Innamoramelo
 {
@@ -31,6 +32,10 @@ namespace Innamoramelo
                 options.Cookie.Name = "aspnetcore.session";
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
             });
+
+            services.AddHttpContextAccessor();
+            services.AddSignalR();
+            services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
             // ... altri servizi
         }
