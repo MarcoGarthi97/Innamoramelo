@@ -2,6 +2,8 @@ using Innamoramelo;
 using Innamoramelo.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSignalR();
+
 var startup = new Startup(builder.Configuration);
 
 startup.ConfigureServices(builder.Services);
@@ -34,5 +36,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 startup.Configure(app, app.Environment);
+
+app.MapHub<ChatHub>("/chatHub");
 
 app.Run();

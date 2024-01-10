@@ -343,7 +343,7 @@ $(document).ready(function () {
         GetNewMassege(_receiverId)
     })
 
-    async function GetNewMassege(receiverId) {
+    async function GetNewMassege(receiverId = _receiverId) {
         var result = await GetConversation(receiverId, 1);
         console.log(result)
         if(result[0].receiverId != receiverId){
@@ -373,5 +373,35 @@ $(document).ready(function () {
 
             OverflowChat()
         }
+    }
+
+    "use strict";
+
+    var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+    
+    connection.on("ReceiveMessage", function (user, message) {
+        console.log(user + ':' + message)
+        pippo()
+    });
+    
+    connection.start().then(function () {
+        console.log('Ok!')
+    }).catch(function (err) {
+        return console.error(err.toString());
+    });
+    
+    $(document).on('click', '#send', function(){        
+        console.log('Send!')
+        var user = 'pippo'
+        var message = 'pippolini'    
+    
+        connection.invoke("SendMessage", user, message).catch(function (err) {
+            return console.error(err.toString());
+        });
+        event.preventDefault();
+    })  
+
+    function pippo(){
+        console.log('pippolini')
     }
 })
