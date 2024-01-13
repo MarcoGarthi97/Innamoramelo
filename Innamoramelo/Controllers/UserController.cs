@@ -11,6 +11,26 @@ namespace Innamoramelo.Controllers
             Config = _config;
         }
 
+        public ActionResult<UserDTO> GetUserId()
+        {
+            try
+            {
+                Authentication();
+
+                var userAPI = new UserAPI(Config);
+                var userDTO = userAPI.GetUser(Token).Result;
+
+                if (userDTO != null)
+                    return Ok(userDTO.Id);
+            }
+            catch (Exception ex)
+            {
+                return badRequest.CreateBadRequest("Internal Server Error", "An internal error occurred.", 500);
+            }
+
+            return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
+        }
+
         public ActionResult<UserDTO> GetUser(string id)
         {
             try

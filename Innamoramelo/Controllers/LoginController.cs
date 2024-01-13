@@ -18,7 +18,7 @@ namespace Innamoramelo.Controllers
                 var authenticationAPI = new AuthenticationAPI(Config);
                 var tokenDTO = authenticationAPI.GetBearerAsync(authenticationDTO).Result;
 
-                if (tokenDTO != null)
+                if (tokenDTO.Bearer != null)
                 {
                     var userAPI = new UserAPI(Config);
                     var userDTO = userAPI.GetUser(tokenDTO.Bearer).Result;

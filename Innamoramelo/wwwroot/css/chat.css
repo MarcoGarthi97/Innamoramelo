@@ -62,3 +62,10 @@
 .conversation-list:hover{
     background-color: #2a4142 !important;
 }
+
+.toast{
+    bottom: 0;
+    left: 0;
+    position: fixed;
+    color: black;
+}

@@ -1,11 +1,27 @@
 $(document).ready(function () {
     var _receiverId = ''
+    var _userId = ''
+
     var _contancts = {}
 
     LoadComponents()
 
     function LoadComponents() {
+        GetUserId()
         GetMatches()
+    }
+
+    function GetUserId() {
+        $.ajax({
+            url: urlGetUserId,
+            type: "POST",
+            success: function (result) {
+                _userId = result
+            },
+            error: function (error) {
+                console.log(error)
+            }
+        })
     }
 
     function GetMatches() {
@@ -55,6 +71,8 @@ $(document).ready(function () {
                 msg += "You: "
 
             msg += item.content.substring(0, 15)
+            if (item.content.length > 14)
+                msg += "..."
 
             var htmlContant = `<div id="` + item.id + `" class="conversation-list"><a class="list-group-item list-group-item-action border-0 contact-item-list">`
 
@@ -68,9 +86,9 @@ $(document).ready(function () {
             htmlContant += `<div class="d-flex align-items-start">
                 <img src="https://bootdey.com/img/Content/avatar/avatar5.png" class="rounded-circle me-1"
                      width="40" height="40">
-                <div class="flex-grow-1 ms-3">
+                <div class="name-contact flex-grow-1 ms-3">
                 ` + item.receiverName +
-                `<div class="small"><span class="fas fa-circle text-success me-1"></span>` + msg + `</div>
+                `<div class="small">` + msg + `</div>
                 </div>
             </div>
             </a></div>`
@@ -106,7 +124,7 @@ $(document).ready(function () {
                 type: "POST",
                 data: { json: json },
                 success: function (result) {
-                    resolve(result); 
+                    resolve(result);
                 },
                 error: function (error) {
                     console.error(error);
@@ -214,13 +232,59 @@ $(document).ready(function () {
                     else
                         htmlContant = `<div class="badge bg-success float-end contanct-badge">+9</div>`
 
-                    $('#' + receiverId + ' .contact-item-list').prepend(htmlContant)
+                    $('#' + receiverId + ' .contact-item-list').prepend(htmlContant) 
                 }
             },
             error: function (error) {
                 console.log(error)
             }
         })
+    }
+
+    async function GetLastMessage(senderId, isYou = false) {
+        var chat = await GetConversation(senderId, 1)
+
+        var msg = chat[0].content.substring(0, 15)
+        if (chat[0].content.substring(0, 15) > 14)
+            msg += '...'
+
+        var fatherElement = $("#" + senderId);
+
+        var childrenElement = fatherElement.find(".name-contact");
+        var contactName = childrenElement.html()
+
+        if(isYou)
+            msg = "You: " + msg 
+        else
+            msg = contactName.substring(contactName.indexOf(":")) + ": " + msg
+
+        childrenElement = fatherElement.find(".small");
+        childrenElement.html('')
+        childrenElement.html(msg)
+
+        if (_receiverId != senderId)
+            CreateToast(chat[0], contactName)
+    }
+
+    function CreateToast(chat, contactName) {
+        console.log(chat)
+
+        var htmlToast = `<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+          <img src="" class="rounded mr-2" alt="">
+          <strong class="mr-auto">` + contactName + `</strong>
+          <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="toast-body">
+        ` + chat.content + `
+        </div>
+      </div>`
+
+        $('#div-toast').append(htmlToast)
+
+        $('.toast').toast('show')
     }
 
     $(document).on('keypress', function (e) {
@@ -251,11 +315,12 @@ $(document).ready(function () {
                 type: "POST",
                 data: { json: json },
                 success: function (result) {
-                    console.log(result)
-                    connection.invoke("SendMessage", _receiverId).catch(function (err) {
+                    connection.invoke("SendMessage", _receiverId, _userId).catch(function (err) {
                         return console.error(err.toString());
                     });
                     event.preventDefault();
+
+                    GetLastMessage(_receiverId, true) 
                 },
                 error: function (error) {
                     console.log(error)
@@ -343,14 +408,13 @@ $(document).ready(function () {
     })
 
     $('#test').on('click', function () {
-        console.log(_receiverId)
-        GetNewMassege(_receiverId)
+        $('.toast').toast('show')
     })
 
     async function GetNewMassege(receiverId = _receiverId) {
         var result = await GetConversation(receiverId, 1);
         console.log(result)
-        if(result[0].receiverId != receiverId){
+        if (result[0].receiverId != receiverId) {
             var htmlChat = "";
             result.forEach(function (item) {
                 if (item.userId == receiverId) {
@@ -358,10 +422,10 @@ $(document).ready(function () {
                 } else {
                     htmlChat += `<div id="` + item.id + `" class="chat-message-right pb-1"><div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">`;
                 }
-    
+
                 htmlChat += item.content + `<div class="text-muted small text-nowrap text-end">` +
                     item.timestamp.substring(11, 16);
-    
+
                 if (item.userId != receiverId) {
                     if (item.viewed != null) {
                         htmlChat += ' ✓✓';
@@ -369,10 +433,10 @@ $(document).ready(function () {
                         htmlChat += ' ✓';
                     }
                 }
-    
+
                 htmlChat += `</div> </div> </div>`;
             });
-    
+
             $('.chat-messages').append(htmlChat);
 
             OverflowChat()
@@ -381,19 +445,27 @@ $(document).ready(function () {
 
     "use strict";
 
+    //DA CAMBIARE QUANDO VA SUL SERVER
+    //var connection = new signalR.HubConnectionBuilder().withUrl("https://marcogarthi.com/Innamoramelo/chatHub").build();
     var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
-    
-    connection.on("GetNewMassege", function () {
-        GetNewMassege() 
+
+    connection.on("GetNewMassege", function (senderId) {
+        if (_receiverId == senderId)
+            GetNewMassege()
+        else {
+            GetBadgeNewMessage(senderId)
+        }
+
+        GetLastMessage(senderId)
     });
-    
+
     connection.start().then(function () {
         console.log('Ok!')
     }).catch(function (err) {
         return console.error(err.toString());
     });
-    
-    $(document).on('click', '#send', function(){        
+
+    /*$(document).on('click', '#send', function(){        
         console.log('Send!')
         var user = 'pippo'
         var message = 'pippolini'    
@@ -402,9 +474,5 @@ $(document).ready(function () {
             return console.error(err.toString());
         });
         event.preventDefault();
-    })  
-
-    function pippo(){
-        console.log('pippolini')
-    }
+    })  */
 })

@@ -50,6 +50,8 @@
                 console.log(result)
                 if (result)
                     window.location.href = '@Url.Action("HomePage", "Home")'
+                else
+                    alert("Wrong mail or password")
             },
             error: function (error) {
                 console.log(error)
