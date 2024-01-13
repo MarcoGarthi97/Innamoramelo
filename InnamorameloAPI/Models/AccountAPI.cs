@@ -51,18 +51,20 @@ namespace InnamorameloAPI.Models
                 filter &= Builders<AccountMongoDB>.Filter.Eq(x => x.Password, password);
 
                 var accountMongo = accounts.Find(filter).FirstOrDefault();
+                if (accountMongo != null)
+                {
+                    var account = new AccountDTO();
+                    Validator.CopyProperties(accountMongo, account);
 
-                var account = new AccountDTO();
-                Validator.CopyProperties(accountMongo, account);
-
-                return account;
+                    return account;
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-
-                return null;
             }
+
+            return null;
         }
 
         internal AccountDTO? InsertAccount(AccountDTO account)
