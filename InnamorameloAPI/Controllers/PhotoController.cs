@@ -93,7 +93,7 @@ namespace InnamorameloAPI.Controllers
                             {
                                 file.CopyTo(ms);
 
-                                var photo = new PhotoDTO(
+                                var photoInsert = new PhotoInsertModel(
                                     userDTO.Id,
                                     ms.ToArray(),
                                     Path.GetFileName(file.FileName),
@@ -101,8 +101,7 @@ namespace InnamorameloAPI.Controllers
                                     photos.Count
                                     );
 
-
-                                var insert = photoAPI.InsertPhoto(photo);
+                                var insert = photoAPI.InsertPhoto(photoInsert);
 
                                 return Ok(insert);
                             }
@@ -130,11 +129,11 @@ namespace InnamorameloAPI.Controllers
                     var userDTO = auth.GetUserByToken(authHeader);
                     if (userDTO != null)
                     {
-                        var photo = new PhotoViewModel();
-                        Validator.CopyProperties(updateModel, photo);
+                        var photoModel = new PhotoInsertModel();
+                        Validator.CopyProperties(updateModel, photoModel);
 
                         var photoAPI = new PhotoAPI(Config);
-                        var update = photoAPI.UpdatePhoto(photo);
+                        var update = photoAPI.UpdatePhoto(photoModel);
 
                         return Ok(update);
                     }

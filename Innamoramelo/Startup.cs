@@ -23,6 +23,11 @@ namespace Innamoramelo
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
             });
 
+            services.Configure<IISServerOptions>(options =>
+            {
+                options.MaxRequestBodySize = 50_000_000; // Imposta la dimensione massima a 50 MB
+            });
+
             services.AddHttpContextAccessor();
             services.AddSignalR();
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();

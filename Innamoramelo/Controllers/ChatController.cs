@@ -119,6 +119,18 @@ namespace Innamoramelo.Controllers
 
                     return contactDTO;
                 }
+                else
+                {
+                    AuthenticationAdmin();
+
+                    var userDTO = userAPI.GetUserById(receiverId, TokenAdmin).Result;
+
+                    var contactDTO = new ContactDTO();
+                    contactDTO.Id = receiverId;
+                    contactDTO.ReceiverName = userDTO.Name;
+
+                    return contactDTO;
+                }
             }
             catch (Exception ex)
             {

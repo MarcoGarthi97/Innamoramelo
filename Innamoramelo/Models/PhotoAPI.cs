@@ -123,5 +123,34 @@ namespace Innamoramelo.Models
 
             return null;
         }
+
+        internal async Task<bool?> DeletePhoto(string id, string token)
+        {
+            try
+            {
+                var options = new RestClientOptions(UrlAPI)
+                {
+                    MaxTimeout = -1,
+                };
+
+                var client = new RestClient(options);
+                var request = new RestRequest("DeletePhoto?id=" + id, Method.Delete);
+
+                request.AddHeader("Authorization", "Bearer " + token);
+
+                RestResponse response = await client.ExecuteAsync(request);
+
+                if (response.Content == "true")
+                    return true;
+                else
+                    return false;
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return null;
+        }
     }
 }

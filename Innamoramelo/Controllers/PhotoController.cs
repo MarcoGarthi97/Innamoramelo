@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 
 namespace Innamoramelo.Controllers
 {
@@ -31,31 +33,31 @@ namespace Innamoramelo.Controllers
             return badRequest.CreateBadRequest("Invalid request", "Invalid request", 400);
         }
 
-        public ActionResult<List<PhotoDTO>?> InsertPhoto(IList<IFormFile> files)
+        public ActionResult<List<PhotoDTO>?> InsertPhoto([FromBody] List<PhotoViewModel> files)
         {
             try
             {
-                var photos = new List<PhotoDTO>();
-                var photoAPI = new PhotoAPI(Config);
-
                 Authentication();
 
-                var delete = photoAPI.DeletePhotos(Token).Result;
+                var photoAPI = new PhotoAPI(Config);
+                var photos = photoAPI.GetPhotos(Token).Result;
+
+                files = files.OrderBy(x => x.Position).ToList();
 
                 foreach (var file in files)
                 {
-                    using (var ms = new MemoryStream())
-                    {
-                        Authentication();
+                    file.Data = Encoding.UTF8.GetBytes(file.Content.ToString());
 
-                        file.CopyTo(ms);
-                        var fileBytes = ms.ToArray();
+                    var photo = photos.FirstOrDefault(x => x.Position == file.Position);
 
-                        var photoDTO = photoAPI.InsertPhoto(fileBytes, file.FileName, Token).Result;
+                    bool? res;
+                    if (photo != null)
+                        res = photoAPI.DeletePhoto(photo.Id, Token).Result;
 
-                        photos.Add(photoDTO);
-                    }
+                    var photoDTO = photoAPI.InsertPhoto(file.Data, file.Name, Token).Result;
                 }
+
+                photos = photoAPI.GetPhotos(Token).Result;
 
                 return photos;
             }

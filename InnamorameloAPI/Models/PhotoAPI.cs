@@ -8,20 +8,23 @@ namespace InnamorameloAPI.Models
     {
         private static IConfiguration Config;
 
-        static private MongoAPI mongo;
-        private readonly string path;
+        private static MongoAPI Mongo;
+        private readonly string PathImages;
+        private readonly string UrlImage;
+
         public PhotoAPI(IConfiguration config)
         {
             Config = config;
-            mongo = new MongoAPI(Config);
-            path = File.ReadAllText(Config["CredentialsMongoDB"]);
+            Mongo = new MongoAPI(Config);
+            PathImages = File.ReadAllText(Config["CredentialsMongoDB"]);
+            UrlImage = Config["UrlImages"];
         }
 
         internal PhotoDTO? GetPhotoById(ObjectId id)
         {
             try
             {
-                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoDatabase innamoramelo = Mongo.GetDatabase();
                 IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
 
                 FilterDefinition<PhotoMongoDB> filter = Builders<PhotoMongoDB>.Filter.Eq(x => x.Id, id);
@@ -32,7 +35,7 @@ namespace InnamorameloAPI.Models
                     var photoDTO = new PhotoDTO();
                     Validator.CopyProperties(find, photoDTO);
 
-                    photoDTO.Bytes = GetPhotoByDirectory(photoDTO.UserId, photoDTO.Name);
+                    photoDTO.Url = UrlImage + "/" + photoDTO.UserId + "/" + photoDTO.Name;
 
                     return photoDTO;
                 }
@@ -49,7 +52,7 @@ namespace InnamorameloAPI.Models
         {
             try
             {
-                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoDatabase innamoramelo = Mongo.GetDatabase();
                 IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
 
                 FilterDefinition<PhotoMongoDB> filter = Builders<PhotoMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(userId));
@@ -64,9 +67,7 @@ namespace InnamorameloAPI.Models
                         var photoDTO = new PhotoDTO();
                         Validator.CopyProperties(photo, photoDTO);
 
-                        photoDTO.Bytes = GetPhotoByDirectory(photoDTO.UserId, photoDTO.Name);
-                        if(photoDTO.Bytes != null)
-                            photoList.Add(photoDTO);
+                        photoList.Add(photoDTO);
                     }
 
                     return photoList;
@@ -84,12 +85,12 @@ namespace InnamorameloAPI.Models
         {
             try
             {
-                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoDatabase innamoramelo = Mongo.GetDatabase();
                 IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
 
                 FilterDefinition<PhotoMongoDB> filter = Builders<PhotoMongoDB>.Filter.Eq(x => x.UserId, userId);
                 filter &= Builders<PhotoMongoDB>.Filter.Eq(x => x.Name, name);
-                var find = photos.Find(filter).FirstOrDefault(); ;
+                var find = photos.Find(filter).FirstOrDefault();
 
                 return find;
             }
@@ -105,7 +106,7 @@ namespace InnamorameloAPI.Models
         {
             try
             {
-                var dir = path + @"\" + userId;
+                var dir = PathImages + @"\" + userId;
 
                 var files = Directory.GetFiles(dir).ToList();
                 var file = files.FirstOrDefault(x => x == dir + @"\" + name);
@@ -124,27 +125,27 @@ namespace InnamorameloAPI.Models
             return null;
         }
 
-        internal PhotoDTO? InsertPhoto(PhotoDTO photoDTO)
+        internal PhotoDTO? InsertPhoto(PhotoInsertModel photoModel)
         {
             try
             {
                 var photo = new PhotoMongoDB();
-                Validator.CopyProperties(photoDTO, photo);
+                Validator.CopyProperties(photoModel, photo);
 
-                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoDatabase innamoramelo = Mongo.GetDatabase();
                 IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
 
                 photos.InsertOne(photo);
 
-                var photoInserted = GetInfoPhotoByName(photo.Name, photo.UserId);
-                if(photoInserted != null)
-                {
-                    photoDTO.Id = photoInserted.Id.ToString();
-                    var insert = InsertPhotosByDirectory(photoDTO);
+                photo = GetInfoPhotoByName(photo.Name, photo.UserId);
 
-                    var update = new PhotoViewModel(photoDTO.Id, photoDTO.Id + photoDTO.Extension, photoDTO.Position);
-                    var result = UpdatePhoto(update);
-                    result.Bytes = photoDTO.Bytes;
+                if(photo != null)
+                {
+                    var insert = InsertPhotosByDirectory(photoModel);
+
+                    photoModel.Url = UrlImage + "/" + photoModel.UserId + "/" + photoModel.Name;
+
+                    var result = UpdatePhoto(photoModel);
 
                     return result;
                 }
@@ -157,11 +158,11 @@ namespace InnamorameloAPI.Models
             return null;
         }
 
-        private bool InsertPhotosByDirectory(PhotoDTO photoDTO)
+        private bool InsertPhotosByDirectory(PhotoInsertModel photoDTO)
         {
             try
             {
-                string dir = path + @"\" + photoDTO.UserId;
+                string dir = PathImages + @"\" + photoDTO.UserId;
                 if (!Directory.Exists(dir))
                     Directory.CreateDirectory(dir);
 
@@ -177,14 +178,14 @@ namespace InnamorameloAPI.Models
             return false;
         }
 
-        internal PhotoDTO? UpdatePhoto(PhotoViewModel photoModel)
+        internal PhotoDTO? UpdatePhoto(PhotoInsertModel photoModel)
         {
             try
             {
                 var photo = new PhotoMongoDB();
                 Validator.CopyProperties(photoModel, photo);
 
-                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoDatabase innamoramelo = Mongo.GetDatabase();
                 IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
 
                 var filter = Builders<PhotoMongoDB>.Filter.Eq(x => x.Id, photo.Id);
@@ -196,6 +197,9 @@ namespace InnamorameloAPI.Models
 
                 if (photo.Position != null)
                     updateDefinition.Add(Builders<PhotoMongoDB>.Update.Set("Position", photo.Position));
+
+                if (photo.Url != null)
+                    updateDefinition.Add(Builders<PhotoMongoDB>.Update.Set("Url", photo.Url));
 
                 var updateProfile = Builders<PhotoMongoDB>.Update.Combine(updateDefinition);
                 var update = photos.UpdateOne(filter, updateProfile);
@@ -215,7 +219,7 @@ namespace InnamorameloAPI.Models
         {
             try
             {
-                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoDatabase innamoramelo = Mongo.GetDatabase();
                 IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
 
                 var filter = Builders<PhotoMongoDB>.Filter.Eq(x => x.Id, new ObjectId(photoDTO.Id));
@@ -236,7 +240,7 @@ namespace InnamorameloAPI.Models
         {
             try
             {
-                IMongoDatabase innamoramelo = mongo.GetDatabase();
+                IMongoDatabase innamoramelo = Mongo.GetDatabase();
                 IMongoCollection<PhotoMongoDB> photos = innamoramelo.GetCollection<PhotoMongoDB>("Photos");
 
                 var filter = Builders<PhotoMongoDB>.Filter.Eq(x => x.UserId, new ObjectId(userId));
@@ -257,7 +261,7 @@ namespace InnamorameloAPI.Models
         {
             try
             {
-                var dir = path + @"\" + userId;
+                var dir = PathImages + @"\" + userId;
                 Directory.Delete(dir, true);
 
                 return true;
@@ -274,7 +278,7 @@ namespace InnamorameloAPI.Models
         {
             try
             {
-                var file = path + @"\" + userId + @"\" + name;
+                var file = PathImages + @"\" + userId + @"\" + name;
                 File.Delete(file);
 
                 return true;

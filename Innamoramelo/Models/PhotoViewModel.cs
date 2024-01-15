@@ -2,16 +2,11 @@
 {
     public class PhotoViewModel
     {
-        public string? Id { get; set; }
-        public string? Name { get; set; }
         public int? Position { get; set; }
-
-        public PhotoViewModel() { }
-        public PhotoViewModel(string? id, string? name, int? position)
-        {
-            Id = id;
-            Name = name;
-            Position = position;
-        }
+        public string? Name { get; set; }
+        public string? Type { get; set; }
+        public long? Size { get; set; }
+        public object? Content { get; set; }
+        public byte[]? Data { get; set; }
     }
 }

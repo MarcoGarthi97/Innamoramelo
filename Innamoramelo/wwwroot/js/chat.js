@@ -2,13 +2,15 @@ $(document).ready(function () {
     var _receiverId = ''
     var _userId = ''
 
-    var _contancts = {}
+    var _contancts = []
+    var _newMatches = []
 
     LoadComponents()
 
     function LoadComponents() {
         GetUserId()
         GetMatches()
+        LoadCarousel()
     }
 
     function GetUserId() {
@@ -29,12 +31,14 @@ $(document).ready(function () {
             url: urlGetMatches,
             type: "POST",
             success: function (result) {
-                var listId = []
-                result.forEach(function (item) {
-                    listId.push(item)
-                })
+                $('#div-contacts').empty()
+                $('#list-carousel').empty()
 
-                GetContacts(listId)
+                CreateCarousel(result)
+
+                result.forEach(function (item) {
+                    GetContact(item)
+                })
             },
             error: function (error) {
                 console.log(error)
@@ -50,6 +54,7 @@ $(document).ready(function () {
             type: "POST",
             data: { json: json },
             success: function (result) {
+                console.log(result)
                 _contancts = result
 
                 CreateContacts(_contancts)
@@ -60,41 +65,145 @@ $(document).ready(function () {
         })
     }
 
+    function GetContact(receiverId) {
+        $.ajax({
+            url: urlGetContact,
+            type: "POST",
+            data: { receiverId: receiverId },
+            success: function (result) {
+                console.log(result)
+                if (result.content != null) {
+                    _contancts.push(result)
+
+                    CreateContact(result)
+                }
+                else {
+                    _newMatches.push(result)
+
+                    CreateCarouselItem(result)
+                }
+            },
+            error: function (error) {
+                console.log(error)
+            }
+        })
+    }
+
+    function CreateCarousel(result) {
+        $('#list-carousel').empty()
+
+        result.forEach(function (item) {
+            if(item.content == null)
+                CreateCarouselItem(item)
+        })
+    }
+
+    function CreateCarouselItem(result) {
+        var isActive = ''
+        if (_newMatches.length == 1) {
+            isActive = 'active'
+
+            $("#recipeCarousel").removeAttr("data-bs-ride", "carousel");
+            $("#recipeCarousel").attr("data-interval", "false");
+            $("#recipeCarousel").attr("data-ride", "carousel");
+            $("#recipeCarousel").attr("data-pause", "hover");
+        }
+
+        if (_newMatches.length == 11) {
+            var arrowsHTML = `<a class="carousel-control-prev bg-transparent w-aut" href="#recipeCarousel"
+            role="button" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        </a>
+        <a class="carousel-control-next bg-transparent w-aut" href="#recipeCarousel"
+            role="button" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        </a>`
+
+            $('#recipeCarousel').append(arrowsHTML)
+
+            $("#recipeCarousel").attr("data-bs-ride", "carousel");
+            $("#recipeCarousel").removeAttr("data-interval", "false");
+            $("#recipeCarousel").removeAttr("data-ride", "carousel");
+            $("#recipeCarousel").removeAttr("data-pause", "hover");
+        }
+
+        var itemHTML = `<div id="carousel-item-` + result.id + `" class="carousel-item ` + isActive + `">
+        <div class="col-md-3">
+            <div class="card rounded-circle">
+                <div class="card-img">
+                    <img src="https://mdbcdn.b-cdn.net/img/new/avatars/9.webp"
+                        class="img-fluid rounded-circle" alt="` + result.receiverName + `">
+                </div>
+            </div>
+        </div>
+    </div>`
+
+        $('#list-carousel').append(itemHTML)
+
+        console.log($('#list-carousel'))
+    }
+
+    function LoadCarousel() {
+        let items = document.querySelectorAll('.carousel .carousel-item')
+        console.log(items)
+        items.forEach((el) => {
+            const minPerSlide = 10
+            let next = el.nextElementSibling
+            for (var i = 1; i < minPerSlide; i++) {
+                if (!next) {
+                    // wrap carousel by using first child
+                    next = items[0]
+                }
+                let cloneChild = next.cloneNode(true)
+                el.appendChild(cloneChild.children[0])
+                next = next.nextElementSibling
+            }
+        })
+    }
+
     function CreateContacts(result) {
         $('#div-contacts').empty()
 
         result.forEach(function (item) {
-            var msg = ""
-            if (item.isReceiverMessage)
-                msg += item.receiverName + ": "
+            BuildContactToHTML(item)
+        })
+    }
+
+    function CreateContact(result) {
+        BuildContactToHTML(result)
+    }
+
+    function BuildContactToHTML(item) {
+        var msg = ""
+        if (item.isReceiverMessage)
+            msg += item.receiverName + ": "
+        else
+            msg += "You: "
+
+        msg += item.content.substring(0, 15)
+        if (item.content.length > 14)
+            msg += "..."
+
+        var htmlContant = `<div id="` + item.id + `" class="conversation-list"><a class="list-group-item list-group-item-action border-0 contact-item-list">`
+
+        if (item.undisplayedMessages > 0) {
+            if (item.undisplayedMessages < 10)
+                htmlContant += `<div class="badge bg-success float-end contanct-badge">` + item.undisplayedMessages + `</div>`
             else
-                msg += "You: "
+                htmlContant += `<div class="badge bg-success float-end contanct-badge">+9</div>`
+        }
 
-            msg += item.content.substring(0, 15)
-            if (item.content.length > 14)
-                msg += "..."
-
-            var htmlContant = `<div id="` + item.id + `" class="conversation-list"><a class="list-group-item list-group-item-action border-0 contact-item-list">`
-
-            if (item.undisplayedMessages > 0) {
-                if (item.undisplayedMessages < 10)
-                    htmlContant += `<div class="badge bg-success float-end contanct-badge">` + item.undisplayedMessages + `</div>`
-                else
-                    htmlContant += `<div class="badge bg-success float-end contanct-badge">+9</div>`
-            }
-
-            htmlContant += `<div class="d-flex align-items-start">
+        htmlContant += `<div class="d-flex align-items-start">
                 <img src="https://bootdey.com/img/Content/avatar/avatar5.png" class="rounded-circle me-1"
                      width="40" height="40">
                 <div class="name-contact flex-grow-1 ms-3">
                 ` + item.receiverName +
-                `<div class="small">` + msg + `</div>
+            `<div class="small">` + msg + `</div>
                 </div>
             </div>
             </a></div>`
 
-            $('#div-contacts').append(htmlContant)
-        })
+        $('#div-contacts').append(htmlContant)
     }
 
     $(document).on('click', '.conversation-list', function (e) {
@@ -232,7 +341,7 @@ $(document).ready(function () {
                     else
                         htmlContant = `<div class="badge bg-success float-end contanct-badge">+9</div>`
 
-                    $('#' + receiverId + ' .contact-item-list').prepend(htmlContant) 
+                    $('#' + receiverId + ' .contact-item-list').prepend(htmlContant)
                 }
             },
             error: function (error) {
@@ -253,8 +362,8 @@ $(document).ready(function () {
         var childrenElement = fatherElement.find(".name-contact");
         var contactName = childrenElement.html()
 
-        if(isYou)
-            msg = "You: " + msg 
+        if (isYou)
+            msg = "You: " + msg
         else
             msg = contactName.substring(contactName.indexOf(":")) + ": " + msg
 
@@ -320,7 +429,7 @@ $(document).ready(function () {
                     });
                     event.preventDefault();
 
-                    GetLastMessage(_receiverId, true) 
+                    GetLastMessage(_receiverId, true)
                 },
                 error: function (error) {
                     console.log(error)
@@ -393,18 +502,22 @@ $(document).ready(function () {
     }
 
     $('#filter').on('input', function () {
-        console.log(_contancts)
         var txt = $('#filter').val().toLowerCase()
 
         var contactsFiltered = {}
+        var newMatchesFiltered = {}
 
         if (txt != "") {
             contactsFiltered = _contancts.filter(x => x.receiverName.toLowerCase().includes(txt))
+            newMatchesFiltered = _newMatches.filter(x => x.receiverName.toLowerCase().includes(txt))
         }
-        else
+        else {
             contactsFiltered = _contancts
+            newMatchesFiltered = _newMatches
+        }
 
         CreateContacts(contactsFiltered)
+        CreateCarousel(newMatchesFiltered)
     })
 
     $('#test').on('click', function () {
